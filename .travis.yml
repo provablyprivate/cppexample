@@ -12,4 +12,4 @@ addons:
       - g++-8
       - gcc-8
 
-script: make all
+script: make build

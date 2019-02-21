@@ -16,7 +16,7 @@ EXECUTABLE_CLIENT	:= client
 EXECUTABLE_SERVER	:= server
 endif
 
-all: bin $(BIN)/$(EXECUTABLE_CLIENT) $(BIN)/$(EXECUTABLE_SERVER)
+build: bin $(BIN)/$(EXECUTABLE_CLIENT) $(BIN)/$(EXECUTABLE_SERVER)
 
 bin:
 	mkdir -p bin
