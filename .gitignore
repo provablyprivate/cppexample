@@ -1,2 +1,10 @@
 bin
 .vscode
+
+# CMAKE
+CMakeCache.txt
+CMakeFiles
+
+# binaries
+server
+client

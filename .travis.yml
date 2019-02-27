@@ -14,5 +14,5 @@ addons:
       - libpoco-dev
       
 
-script: 
-  - make build
+install: cmake .
+script: make
