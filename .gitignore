@@ -4,6 +4,8 @@ bin
 # CMAKE
 CMakeCache.txt
 CMakeFiles
+Makefile
+cmake_install.cmake
 
 # binaries
 server
