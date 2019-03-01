@@ -3,10 +3,10 @@ C_FLAGS := -std=c++17 -Wall -Wextra
 
 BIN		:= bin
 SRC		:= src
-INCLUDE	:= include
-LIB		:= lib
+INCLUDE := -Iextern/poco/Net/include -Iextern/poco/Foundation/include
+LIB		:= -L/usr/local/lib
 
-LIBRARIES	:=
+LIBRARIES	:= -lPocoNet -lPocoFoundation
 
 ifeq ($(OS),Windows_NT)
 EXECUTABLE_CLIENT	:= client.exe
@@ -28,7 +28,7 @@ run: all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE_CLIENT): $(SRC)/client.cpp
-	$(CC) $(C_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
+	$(CC) $(C_FLAGS) -I $(POCO_NET_INCLUDE) $(LIB) $^ -o $@ $(LIBRARIES)
 
 $(BIN)/$(EXECUTABLE_SERVER): $(SRC)/server.cpp
-	$(CC) $(C_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
+	$(CC) $(C_FLAGS) -I $(POCO_NET_INCLUDE) $(LIB) $^ -o $@ $(LIBRARIES)

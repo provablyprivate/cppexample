@@ -1,0 +1,4 @@
+[submodule "extern/poco"]
+	path = extern/poco
+	url = https://github.com/pocoproject/poco
+	branch = poco-1.9.1
