@@ -8,7 +8,7 @@ if (UNIX AND NOT APPLE)
 
     find_package (Threads)
 
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
     find_package(Poco REQUIRED COMPONENTS Net NetSSL Data JSON Crypto Foundation)
     message(INFO, ${Poco_INCLUDE_DIRS})
     message(INFO, ${Poco_LIBRARIES})
