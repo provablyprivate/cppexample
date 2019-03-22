@@ -11,3 +11,4 @@ const std::string connectionTerminator = "bye"; // Maybe a special json object?
 
 
 
+
