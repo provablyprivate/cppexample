@@ -1,0 +1,69 @@
+#include "jsonparser.h"
+//Should the standard includes be imported here???
+
+JSONParser::JSONParser(std::string input)
+{
+    //Poco::JSON::Parser parser;
+    //Poco::JSON::Object::Ptr key;
+    //can i comment these out because they're in the header?
+    key = parser.parse(input).extract<Poco::JSON::Object::Ptr>();
+}
+
+// Returns the TYPE value of the JSON
+std::string JSONParser::getType()
+{
+    return key->get("Type").toString();
+}
+
+//Returns the DATA value of the JSON
+std::string JSONParser::getData()
+{
+    return key->get("Data").toString();
+}
+
+//Returns the CONSENT value of the JSON
+std::string JSONParser::getConsent()
+{
+    return key->get("Consent").toString();
+}
+
+//Returns the CHILD value of the JSON
+std::string JSONParser::getChild()
+{
+    return key->get("Child").toString();
+}
+
+//Returns ALL values of the JSON in an VECTOR ARRAY
+std::vector<std::string> JSONParser::getAll()
+{
+    std::vector<std::string> allValues;
+    allValues.push_back(getType());
+    allValues.push_back(getData());
+    allValues.push_back(getConsent());
+    allValues.push_back(getChild());
+    return allValues;
+}
+
+// Sets a new value for TYPE
+void JSONParser::putType(std::string value)
+{
+    key->set("Type",value);
+}
+
+// Sets a new value for DATA
+void JSONParser::putData(std::string value)
+{
+    key->set("Data",value);
+}
+
+// Sets a new value for CONSENT
+void JSONParser::putConsent(std::string value)
+{
+    key->set("Consent",value);
+}
+
+// Sets a new value for CHILD
+void JSONParser::putChild(std::string value)
+{
+    key->set("Child",value);
+}

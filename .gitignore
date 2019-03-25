@@ -10,3 +10,7 @@ cmake_install.cmake
 # binaries
 server
 client
+policyhandler
+pdatahandler
+consenthandler
+request
