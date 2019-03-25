@@ -20,18 +20,11 @@ if (UNIX AND NOT APPLE)
     set(SERVER_SOURCE src/server.cpp)
     add_executable(server ${SERVER_SOURCE})
 
-    set(POLICY_HANDLER_SOURCE src/policyhandler.cpp)
-    add_executable(policyhandler ${POLICY_HANDLER_SOURCE})
-
     target_link_libraries(client
         ${CMAKE_THREAD_LIBS_INIT}
         ${Poco_LIBRARIES}
     )
     target_link_libraries(server
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
-    )
-    target_link_libraries(policyhandler
         ${CMAKE_THREAD_LIBS_INIT}
         ${Poco_LIBRARIES}
     )
@@ -54,7 +47,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 
     add_executable(client src/client.cpp)
     add_executable(server src/server.cpp)
-    add_executable(policyhandler src/policyhandler.cpp)
 
     target_link_libraries(client
         ${POCO_LIBRARIES}
@@ -63,9 +55,5 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     target_link_libraries(server
         ${POCO_LIBRARIES}
         ${OPENSSL_LIBRARIES}
-    )
-    target_link_libraries(policyhandler
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
     )
 endif()
