@@ -3,10 +3,10 @@ C_FLAGS := -std=c++17 -Wall -Wextra
 
 BIN		:= bin
 SRC		:= src
-INCLUDE := -Iextern/poco/Net/include -Iextern/poco/Foundation/include -Iextern/poco/JSON/include
+INCLUDE := -Iextern/poco/Net/include -Iextern/poco/Foundation/include
 LIB		:= -L/usr/local/lib
 
-LIBRARIES	:= -lPocoNet -lPocoFoundation -lPocoJSON
+LIBRARIES	:= -lPocoNet -lPocoFoundation
 
 ifeq ($(OS),Windows_NT)
 EXECUTABLE_CLIENT	:= client.exe
