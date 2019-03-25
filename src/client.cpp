@@ -24,9 +24,11 @@ int main(int argc, char** argv) {
         if (s == "bye") {
             return 0;
         }
-        
+
 
     }
-    
-    return 0;
+
+    int slutanu = argc;
+    slutanu = 0;
+    return slutanu;
 }

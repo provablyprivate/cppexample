@@ -10,15 +10,15 @@
 #include <iostream>
 
 
-int main(int argc, char** argv) {
+int main() {
     Poco::Net::ServerSocket listener;
-    listener = Poco::Net::ServerSocket(PORT, 64);    
+    listener = Poco::Net::ServerSocket(PORT, 64);
     Poco::Net::StreamSocket streamSocket = listener.acceptConnection();
     Poco::Net::SocketStream socketStream(streamSocket);
     std::cout << "Connection to client established" << std::endl;
-     
+
     std::string s;
-    
+
     while (true) {
         //socketStream << "Send me something and get it back in uppercase (exit with bye)" << std::endl;
         std::cout << ">> ";
