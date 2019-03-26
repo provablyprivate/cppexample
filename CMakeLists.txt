@@ -4,12 +4,15 @@ project(cppexample)
 set(CMAKE_CXX_STANDARD 17)
 
 if (UNIX AND NOT APPLE)
-    include_directories("include")
-
+    set(POCO_PREFIX /usr/local)
     find_package (Threads)
 
+    include_directories(/usr/local/include)
+    include_directories(/usr/include)
+    link_directories(/usr/local/lib)
+    link_directories(/usr/lib)
+
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
-    find_package(Poco REQUIRED COMPONENTS Net NetSSL Data JSON Crypto Foundation)
     message(INFO, ${Poco_INCLUDE_DIRS})
     message(INFO, ${Poco_LIBRARIES})
 
@@ -20,15 +23,16 @@ if (UNIX AND NOT APPLE)
     set(SERVER_SOURCE src/server.cpp)
     add_executable(server ${SERVER_SOURCE})
 
-
+    file(GLOB POCO_LIBRARIES "/usr/local/lib/*.so")
+    file(GLOB OPENSSL_LIBRARIES "/usr/lib/*.so")
 
     target_link_libraries(client
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
+        ${POCO_LIBRARIES}
+        ${OPENSSL_LIBRARIES}
     )
     target_link_libraries(server
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
+        ${POCO_LIBRARIES}
+        ${OPENSSL_LIBRARIES}
     )
 endif()
 
