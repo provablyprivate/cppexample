@@ -16,6 +16,5 @@ WORKDIR /build/cmake_build
 COPY ./CMakeLists.txt /build/CMakeLists.txt
 COPY ./CMake /build/CMAke
 COPY ./src /build/src
-RUN ls /build
-RUN ls /build/CMAke
+#compile
 RUN CXX=/bin/g++ cmake .. && make
