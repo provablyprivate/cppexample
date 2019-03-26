@@ -1,18 +1,10 @@
 language: cpp
 dist: xenial
-compiler: gcc
+services:
+  - docker
 os:
 - linux
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-8
-      - gcc-8
-      - libpoco-dev
-      
 
-install: cmake .
-script: make
+install: docker pull ubuntu:disco
+script: docker build .
