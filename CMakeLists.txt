@@ -13,27 +13,14 @@ if (UNIX AND NOT APPLE)
     message(INFO, ${Poco_INCLUDE_DIRS})
     message(INFO, ${Poco_LIBRARIES})
 
+    set(LIBS ${CMAKE_THREAD_LIBS_INIT} ${Poco_LIBRARIES})
 
-    set(CLIENT_SOURCE src/client.cpp)
-    add_executable(client ${CLIENT_SOURCE})
-
-    set(SERVER_SOURCE src/server.cpp)
-    add_executable(server ${SERVER_SOURCE})
-
-    target_link_libraries(client
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
-    )
-    target_link_libraries(server
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${Poco_LIBRARIES}
-    )
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     # the directory containing "include" and "lib"
-    set(POCO_PREFIX /usr/local/Cellar/poco/1.9.0_1)
-    set(OPENSSL_PREFIX /usr/local/Cellar/openssl/1.0.2q)
+    set(POCO_PREFIX /usr/local/opt/poco)
+    set(OPENSSL_PREFIX /usr/local/opt/openssl)
 
     include_directories(${POCO_PREFIX}/include)
     include_directories(${OPENSSL_PREFIX}/include)
@@ -45,15 +32,12 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     message("POCO_LIBRARIES = ${POCO_LIBRARIES}")
     message("OPENSSL_LIBRARIES = ${OPENSSL_LIBRARIES}")
 
-    add_executable(client src/client.cpp)
-    add_executable(server src/server.cpp)
+    set(LIBS ${POCO_LIBRARIES} ${OPENSSL_LIBRARIES})
 
-    target_link_libraries(client
-        ${POCO_LIBRARIES}
-        ${OPENSSL_LIBRARIES}
-    )
-    target_link_libraries(server
-        ${POCO_LIBRARIES}
-        ${OPENSSL_LIBRARIES}
-    )
 endif()
+
+add_executable(client src/client.cpp)
+add_executable(server src/server.cpp)
+
+target_link_libraries(client ${LIBS})
+target_link_libraries(server ${LIBS})
