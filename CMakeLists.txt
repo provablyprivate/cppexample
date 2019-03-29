@@ -38,6 +38,8 @@ endif()
 
 add_executable(client src/client.cpp)
 add_executable(server src/server.cpp)
+add_executable(json test/json_test.cpp)
 
 target_link_libraries(client ${LIBS})
 target_link_libraries(server ${LIBS})
+target_link_libraries(json ${LIBS})
