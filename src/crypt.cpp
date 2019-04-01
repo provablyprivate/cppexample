@@ -40,15 +40,15 @@ public:
         digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
     }
-    
+
     // Creates an instance for when only the public key is known
-    Crypt(std::string publicKey) { 
+    Crypt(std::string publicKey) {
         RSAKey key(publicKey);
         digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
-        
+
     }
-    
+
     //Encryptes a string
     std::string encrypt(std::string a){
         return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
@@ -57,15 +57,22 @@ public:
     std::string decrypt(std::string a){
         return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
     }
-    
+    //
+    // // Signs a string with private key
+    // std::string sign(std::string a) {
+    //     digestEngine->reset();
+    //     digestEngine->update(a);
+    //     std::vector<unsigned char> v = digestEngine->signature();
+    //     return std::string(v.begin(), v.end());
+    // }
     // Signs a string with private key
     std::string sign(std::string a) {
         digestEngine->reset();
         digestEngine->update(a);
         std::vector<unsigned char> v = digestEngine->signature();
-        return std::string(v.begin(), v.end());
+        return digestEngine->digestToHex(v);
     }
-    
+
     // Verify digest against data
     bool verify(std::string data, std::string digest) {
         digestEngine->reset();
@@ -73,7 +80,7 @@ public:
         std::vector<unsigned char> v(digest.begin(), digest.end());
         return digestEngine->verify(v);
     }
-    
+
 };
 
 
