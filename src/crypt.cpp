@@ -57,20 +57,13 @@ public:
     std::string decrypt(std::string a){
         return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
     }
-    //
-    // // Signs a string with private key
-    // std::string sign(std::string a) {
-    //     digestEngine->reset();
-    //     digestEngine->update(a);
-    //     std::vector<unsigned char> v = digestEngine->signature();
-    //     return std::string(v.begin(), v.end());
-    // }
+
     // Signs a string with private key
     std::string sign(std::string a) {
         digestEngine->reset();
         digestEngine->update(a);
         std::vector<unsigned char> v = digestEngine->signature();
-        return digestEngine->digestToHex(v);
+        return std::string(v.begin(), v.end());
     }
 
     // Verify digest against data
