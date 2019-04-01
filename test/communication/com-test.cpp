@@ -12,6 +12,29 @@
 
 using namespace Poco;
 using namespace std;
+
+
+// Creates generic JSON object
+Dynamic::Var createVarJSON(string stringJSON) {
+    JSON::Parser p;
+    return p.parse(stringJSON);
+}
+
+// Get data from json
+string getDataJSON(Dynamic::Var variable, string data) {
+    JSON::Object::Ptr obj = variable.extract<JSON::Object::Ptr>();
+    return obj->get(data).toString();
+}
+
+// Put data in json
+void putDataJSON(Dynamic::Var variable, string key, string value) {
+    JSON::Object::Ptr obj = variable.extract<JSON::Object::Ptr>();
+    obj->set(key, value);
+}
+
+// Prints file contents
+string read(string location) {
+    string tmp = "";
     ifstream file(location);
     StreamCopier::copyToString(file, tmp);
     file.close();
