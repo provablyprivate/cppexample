@@ -194,7 +194,7 @@ int main() {
 
 
     printf("\n%s", "Verifying Website created JSON: ");
-    prevJSON = getDataJSON(prevJSON, "Previous JSN");
+    prevJSON = getDataJSON(prevJSON, "Previous JSON");
     //string oldWebSign = getDataJSON(oldParJSON, "Previous Signature");
     //verifySignature(webPubCrypt, oldWebSign, oldWebJSON);
 
