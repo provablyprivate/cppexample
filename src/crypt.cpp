@@ -3,6 +3,8 @@
 #include "Poco/Crypto/CipherFactory.h"
 #include "Poco/Crypto/CipherKey.h"
 #include "Poco/Crypto/RSAKey.h"
+#include "Poco/Crypto/RSADigestEngine.h"
+#include "Poco/Crypto/DigestEngine.h"
 #include <iostream>
 #include <string.h>
 #include <stdexcept>
@@ -11,73 +13,67 @@
 /*  Usage
  *      Create an instance of the crypt class.
  *      Then use the methods given to encrypt
- *      and decrypt std::strings
+ *      and decrypt std::string
  *
  *      Check main functions for better usage
  * */
 
+using namespace Poco::Crypto;
+
 class Crypt{
-    Poco::Crypto::Cipher* cipher;
-    public: 
+
+private:
+    Cipher* cipher;
+    RSADigestEngine* digestEngine;
+    CipherFactory &factory = CipherFactory::defaultFactory();
+
+public:
     //Create an instance and a cipher in one
-    Crypt(std::string password){
-        std::cout << "Created a new instance of crypt using a password" << "\n";
-        this->createCipher(password);
-    }
-    Crypt(){
-        std::cout << "Created a new instance of the crypt class" << "\n";
-    }
-    
-    //Create a cipher that is used to decrypt and encrypt messages
-    Poco::Crypto::Cipher* createCipher(std::string password, std::string salt, std::string digest, std::string method){
-        Poco::Crypto::CipherFactory& factory = Poco::Crypto::CipherFactory::defaultFactory();
-        Poco::Crypto::CipherKey key(method, password, salt, ITERATIONS, digest);
+    Crypt() {
+        RSAKey key(RSAKey(RSAKey::KL_2048, RSAKey::EXP_LARGE));
+        digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
-        return cipher;
     }
 
-    //Create a cipher that is used to decrypt and encrypt messages with default settings
-    Poco::Crypto::Cipher* createCipher(std::string password){
-        Poco::Crypto::CipherFactory& factory = Poco::Crypto::CipherFactory::defaultFactory();
-        std::string salt(SALT);
-        std::string digest (DIGEST);
-        Poco::Crypto::CipherKey key(METHOD, password, salt, ITERATIONS, digest);
+    Crypt(std::string publicKey, std::string privateKey) {
+        RSAKey key(RSAKey(publicKey, privateKey));
+        digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
-        return cipher;
     }
 
-    //Encryptes a string
-    std::string encrypt(std::string a, Poco::Crypto::Cipher* cipher){
-        std::string encrypted = cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
-        return encrypted;
+    // Creates an instance for when only the public key is known
+    Crypt(std::string publicKey) {
+        RSAKey key(publicKey);
+        digestEngine = new RSADigestEngine(key);
+        cipher = factory.createCipher(key);
+
     }
-    
+
     //Encryptes a string
     std::string encrypt(std::string a){
-        std::string encrypted = cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
-        return encrypted;
-    }
-
-    //Decrypt a string
-    std::string decrypt(std::string a, Poco::Crypto::Cipher* cipher){
-        std::string decrypt = cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
-        return decrypt;
+        return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
     }
     //Decrypt a string
     std::string decrypt(std::string a){
-        std::string decrypt = cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
-        return decrypt;
+        return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
+    }
+
+    // Signs a string with private key
+    std::string sign(std::string a) {
+        digestEngine->reset();
+        digestEngine->update(a);
+        std::vector<unsigned char> v = digestEngine->signature();
+        return std::string(v.begin(), v.end());
+    }
+
+    // Verify digest against data
+    bool verify(std::string data, std::string digest) {
+        digestEngine->reset();
+        digestEngine->update(data);
+        std::vector<unsigned char> v(digest.begin(), digest.end());
+        return digestEngine->verify(v);
     }
 
 };
 
-int main(){
-    std::string message = "My secret message";
-    Crypt* childCrypt = new Crypt("password");
-    std::string encryptedMessage = childCrypt->encrypt(message);
-    std::cout << encryptedMessage << "\n" ;
-    std::string decryptedMessage = childCrypt->decrypt(encryptedMessage);
-    std::cout << decryptedMessage << "\n" ;
-    return 0;
-}
 
