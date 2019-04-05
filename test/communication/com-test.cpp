@@ -100,7 +100,7 @@ int main() {
     jsonPar->put("Value", consent);
     jsonPar->put("Child", "1");
     jsonPar->put("Previous Signature", webSign);
-    jsonPar->put("Previous JSON", jsonWeb->toString());
+    jsonPar->put("Previous JSON", jsonWeb->getObject());
     std::cout << jsonPar->toString() << std::endl;
 
     std::cout << "Next the parent signs the JSON and send it back to the website" << std::endl;
@@ -144,7 +144,7 @@ int main() {
     jsonChi->put("Type", "Pdata");
     jsonChi->put("Value", encToWeb);
     jsonChi->put("Previous Signature", parSign);
-    jsonChi->put("Previous JSON", jsonPar->toString());
+    jsonChi->put("Previous JSON", jsonPar->getObject());
     std::cout << jsonChi->toString() << std::endl;
 
     std::cout << "Next the child signs the JSON and send it back to the website" << std::endl;

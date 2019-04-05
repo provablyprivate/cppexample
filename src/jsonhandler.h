@@ -18,6 +18,7 @@ class JSONHandler {
     void put(string key, Var value);
     Var get(string data);
     string toString();
+    Poco::JSON::Object::Ptr getObject();
 };
 
 #endif  // SRC_JSONHANDLER_H_
