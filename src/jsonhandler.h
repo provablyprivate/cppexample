@@ -15,9 +15,8 @@ class JSONHandler {
     JSONHandler();
     explicit JSONHandler(string input);
 
-    void put(string key, string value);
-    Var getVar(string data);
-    string get(string data);
+    void put(string key, Var value);
+    Var get(string data);
     string toString();
 };
 

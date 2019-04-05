@@ -172,17 +172,16 @@ int main() {
 
     printf("\n%s", "Verifying Parent created JSON: ");
     string prevSign = jsonChi->get("Previous Signature");
-    string prevJson = jsonChi->get("Previous JSON");
+    Var prevJson = jsonChi->get("Previous JSON");
     parPubCrypt->verify(prevJson, prevSign) ? std::cout << "OK!\n" : std::cout << "ERROR";
     //
-    //JSONHandler * p = new JSONHandler(prevJson);
    // WHY ABOVE NOT WORKING
-
     std::cout << typeid(jsonChi->toString()).name() << std::endl;
     std::cout << typeid("A").name() << std::endl;
     std::cout << typeid("AB AB AB BA").name() << std::endl;
     std::cout << typeid(prevJson).name() << std::endl;
-    //
+    std::cout << prevJson.toString() << std::endl;
+    JSONHandler * p = new JSONHandler(prevJson.toString());
     // printf("\n%s", "Verifying Website created JSON: ");
     //prevJSON = getDataJSON(prevJSON, "Previous JSON");
     //string oldWebSign = getDataJSON(oldParJSON, "Previous Signature");

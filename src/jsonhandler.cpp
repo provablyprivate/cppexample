@@ -10,24 +10,18 @@ JSONHandler::JSONHandler() {
 }
 
 // Sets a new value
-void JSONHandler::put(string key, string value) {
+void JSONHandler::put(string key, Var value) {
     Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
     obj->set(key, value);
 }
 
-
 // Returns the dynamic variable
-Var JSONHandler::getVar(string data) {
+Var JSONHandler::get(string data) {
     Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
     return obj->get(data);
 }
 
-// Returns the variable as a string
-string JSONHandler::get(string data) {
-    Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
-    return obj->get(data).toString();
+string JSONHandler::toString() {
+    return variable.convert<std::string>();
 }
 
-string JSONHandler::toString() {
-    return variable.toString();
-}
