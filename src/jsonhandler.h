@@ -5,19 +5,22 @@
 
 using std::string;
 using Poco::Dynamic::Var;
+using Poco::JSON::Object;
 
 class JSONHandler {
  private:
     Poco::JSON::Parser parser;
-    Var variable;
+    Object::Ptr object;
 
  public:
     JSONHandler();
-    explicit JSONHandler(string input);
+    // explicit JSONHandler(string input);
+    explicit JSONHandler(Object::Ptr input);
 
     void put(string key, Var value);
     Var get(string data);
     string toString();
+    Object::Ptr getObject();
 };
 
 #endif  // SRC_JSONHANDLER_H_
