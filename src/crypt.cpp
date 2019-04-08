@@ -58,19 +58,19 @@ public:
         return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
     }
 
-    // Signs a string with private key
+    // Signs a string with private key. Returns a hex string
     std::string sign(std::string a) {
         digestEngine->reset();
         digestEngine->update(a);
         std::vector<unsigned char> v = digestEngine->signature();
-        return std::string(v.begin(), v.end());
+        return digestEngine->digestToHex(v);
     }
 
-    // Verify digest against data
+    // Verify digest against data. Input must be a hex string
     bool verify(std::string data, std::string digest) {
         digestEngine->reset();
         digestEngine->update(data);
-        std::vector<unsigned char> v(digest.begin(), digest.end());
+        std::vector<unsigned char> v = digestEngine->digestFromHex(digest);
         return digestEngine->verify(v);
     }
 

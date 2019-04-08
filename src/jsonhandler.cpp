@@ -25,7 +25,3 @@ string JSONHandler::toString() {
     return variable.convert<std::string>();
 }
 
-Poco::JSON::Object::Ptr JSONHandler::getObject() {
-	Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
-	return obj;
-}

@@ -1,13 +1,3 @@
-/*
- * !!!PLEASE READ!!!
- *
- * WHY THIS IS BAD:
- * The created JSON handlers are NOT used currently
- * Instead get and put functions are created below
- *
- * This needs to change
- *
- */
 
 #include <iostream>
 #include <fstream>
@@ -99,8 +89,8 @@ int main() {
     jsonPar->put("Type", "Consent");
     jsonPar->put("Value", consent);
     jsonPar->put("Child", "1");
-    jsonPar->put("Previous Signature", webSign);
-    jsonPar->put("Previous JSON", jsonWeb->getObject());
+    jsonPar->put("PrevSign", webSign);
+    jsonPar->put("PrevJson", jsonWeb->toString());
     std::cout << jsonPar->toString() << std::endl;
 
     std::cout << "Next the parent signs the JSON and send it back to the website" << std::endl;
@@ -143,8 +133,8 @@ int main() {
     string encToWeb = webPubCrypt->encrypt(read("./test/communication/child.data"));
     jsonChi->put("Type", "Pdata");
     jsonChi->put("Value", encToWeb);
-    jsonChi->put("Previous Signature", parSign);
-    jsonChi->put("Previous JSON", jsonPar->getObject());
+    jsonChi->put("PrevSign", parSign);
+    jsonChi->put("PrevJson", jsonPar->toString());
     std::cout << jsonChi->toString() << std::endl;
 
     std::cout << "Next the child signs the JSON and send it back to the website" << std::endl;
@@ -167,26 +157,19 @@ int main() {
 
     std::cout << "\n\n\nDone!! For funzies, let us act as a 3rd party and recursively verify all messages sent, from the last JSON created at Child (see code for details):" << std::endl;
 
+    JSONHandler * prev = new JSONHandler(jsonChi->get("PrevJson").toString());
+    string prevSign = jsonChi->get("PrevSign");
+    JSONHandler * prevprev = new JSONHandler(prev->get("PrevJson").toString());
+    string prevprevSign = prev->get("PrevSign");
+
     printf("%s", "Verifying Child created JSON: ");
     verifySignature(chiPubCrypt, chiSign, jsonChi);
 
     printf("\n%s", "Verifying Parent created JSON: ");
-    string prevSign = jsonChi->get("Previous Signature");
-    Var prevJson = jsonChi->get("Previous JSON");
-    parPubCrypt->verify(prevJson, prevSign) ? std::cout << "OK!\n" : std::cout << "ERROR";
-    //
-   // WHY ABOVE NOT WORKING
-    std::cout << typeid(jsonChi->toString()).name() << std::endl;
-    std::cout << typeid("A").name() << std::endl;
-    std::cout << typeid("AB AB AB BA").name() << std::endl;
-    std::cout << typeid(prevJson).name() << std::endl;
-    std::cout << prevJson.toString() << std::endl;
-    JSONHandler * p = new JSONHandler(prevJson.toString());
-    // printf("\n%s", "Verifying Website created JSON: ");
-    //prevJSON = getDataJSON(prevJSON, "Previous JSON");
-    //string oldWebSign = getDataJSON(oldParJSON, "Previous Signature");
-    //verifySignature(webPubCrypt, oldWebSign, oldWebJSON);
+    verifySignature(parPubCrypt, prevSign, prev);
 
+    printf("\n%s", "Verifying Website created JSON: ");
+    verifySignature(webPubCrypt, prevprevSign, prevprev);
 
     return 0;
 }
