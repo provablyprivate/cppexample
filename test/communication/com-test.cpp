@@ -18,9 +18,9 @@ string read(string location) {
 }
 
 // Verifies signatures
-void verifySignature(Crypt* key, string signature, JSONHandler* JSON)
+void verifySignature(Crypt* key, string signature, JSON::Object::Ptr json)
 {
-    key->verify(JSON->toString(), signature) ? cout << "OK!" : cout << "ERROR";
+    key->verify(json, signature) ? cout << "OK!" : cout << "ERROR";
 }
 
 int main() {
@@ -58,7 +58,7 @@ int main() {
     cout << jsonWeb->toString() << endl;
 
     cout << "\nNext step is for the website to sign the json object." << endl;
-    string webSign = webCrypt->sign(jsonWeb->toString());
+    string webSign = webCrypt->sign(jsonWeb->getObject());
     cout << "Signed with webCrypt! The JSON and sign is sent to the parent" << endl;
 
 
@@ -68,7 +68,7 @@ int main() {
     cout << jsonWeb->toString() << endl;
 
     cout << "\nIt verifies the signature with the websites public key (webPubCrypt)"  << endl;
-    verifySignature(webPubCrypt, webSign, jsonWeb);
+    verifySignature(webPubCrypt, webSign, jsonWeb->getObject());
 
     cout << "\n\nWe assume the parent agrees to the policy.\
         \nThus creating the following JSON:" << endl;
@@ -82,7 +82,7 @@ int main() {
     cout << jsonPar->toString() << endl;
 
     cout << "Next the parent signs the JSON and send it back to the website" << endl;
-    string parSign = parCrypt->sign(jsonPar->toString());
+    string parSign = parCrypt->sign(jsonPar->getObject());
     cout << "signed with parCrypt!" << endl;
 
 
@@ -93,7 +93,7 @@ int main() {
     cout << jsonPar->toString() << endl;
 
     cout << "The website verifies the json with parents signature (parPubCrypt):" << endl;
-    verifySignature(parPubCrypt, parSign, jsonPar);
+    verifySignature(parPubCrypt, parSign, jsonPar->getObject());
     cout << "\nIt then checks the target child and forwards the JSON (with par sign)" << endl;
 
 
@@ -106,7 +106,7 @@ int main() {
     cout << read("./test/communication/child.data") << endl;
 
     cout << "The child verifies the json with parents signature (parPubCrypt):" << endl;
-    verifySignature(parPubCrypt, parSign, jsonPar);
+    verifySignature(parPubCrypt, parSign, jsonPar->getObject());
 
 
     cout << "\n\nIt then decrypts its message from the JSON to find that the consent is OK:" << endl;
@@ -124,7 +124,7 @@ int main() {
     cout << jsonChi->toString() << endl;
 
     cout << "Next the child signs the JSON and send it back to the website" << endl;
-    string chiSign = chiCrypt->sign(jsonChi->toString());
+    string chiSign = chiCrypt->sign(jsonChi->getObject());
     cout << "signed with chiCrypt!" << endl;
 
 
@@ -134,7 +134,7 @@ int main() {
     cout << jsonChi->toString() << endl;
 
     cout << "\nThe website verifies the json with childs signature (chiPubCrypt):" << endl;
-    verifySignature(chiPubCrypt, chiSign, jsonChi);
+    verifySignature(chiPubCrypt, chiSign, jsonChi->getObject());
     cout << "\n\nIt then reads the JSON and decrypts the data (webCrypt):" << endl;
     string encData = jsonChi->get("Value");
     string decData = webCrypt->decrypt(encData);
@@ -143,24 +143,23 @@ int main() {
     /* Recursive Lookup */
     cout << "\n\n\nDone!! For funzies, let us act as a 3rd party and recursively verify all messages sent, from the last JSON created at Child (see code for details):" << endl;
 
-    string currentSign;
-    JSONHandler * currentJson;
 
-    currentSign = chiSign;
-    currentJson = jsonChi;
+    string childSign = chiSign;
+    JSON::Object::Ptr childJson = jsonChi->getObject();
     printf("%s", "Verifying Child created JSON: ");
-    verifySignature(chiPubCrypt, currentSign, currentJson);
+    verifySignature(chiPubCrypt, childSign, childJson);
 
-    currentSign = jsonChi->get("PrevSign").toString();
-    currentJson = new JSONHandler(jsonChi->get("PrevJson").extract<Object::Ptr>());
+
+    string parentSign = childJson->get("PrevSign");
+    JSON::Object::Ptr parentJson = childJson->getObject("PrevJson");
     printf("\n%s", "Verifying Parent created JSON: ");
-    verifySignature(parPubCrypt, currentSign, currentJson);
+    verifySignature(parPubCrypt, parentSign, parentJson);
 
-    currentSign = currentJson->get("PrevSign").toString();
-    currentJson = new JSONHandler(currentJson->get("PrevJson").extract<Object::Ptr>());
 
+    string websiteSign = parentJson->get("PrevSign");
+    JSON::Object::Ptr websiteJson = parentJson->getObject("PrevJson");
     printf("\n%s", "Verifying Website created JSON: ");
-    verifySignature(webPubCrypt, currentSign, currentJson);
+    verifySignature(webPubCrypt, websiteSign, websiteJson);
 
     return 0;
 }

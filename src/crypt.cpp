@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdexcept>
+#include <Poco/JSON/Object.h>
 #include "crypt.h"
 
 /*  Usage
@@ -26,6 +27,12 @@ private:
     Cipher* cipher;
     RSADigestEngine* digestEngine;
     CipherFactory &factory = CipherFactory::defaultFactory();
+
+    std::string jsonToString(Poco::JSON::Object::Ptr json) {
+        std::stringstream data;
+        json->stringify(data);
+        return data.str();
+    }
 
 public:
     //Create an instance and a cipher in one
@@ -59,17 +66,17 @@ public:
     }
 
     // Signs a string with private key. Returns a hex string
-    std::string sign(std::string a) {
+    std::string sign(Poco::JSON::Object::Ptr json) {
         digestEngine->reset();
-        digestEngine->update(a);
+        digestEngine->update(jsonToString(json));
         std::vector<unsigned char> v = digestEngine->signature();
         return digestEngine->digestToHex(v);
     }
 
     // Verify digest against data. Input must be a hex string
-    bool verify(std::string data, std::string digest) {
+    bool verify(Poco::JSON::Object::Ptr json, std::string digest) {
         digestEngine->reset();
-        digestEngine->update(data);
+        digestEngine->update(jsonToString(json));
         std::vector<unsigned char> v = digestEngine->digestFromHex(digest);
         return digestEngine->verify(v);
     }
