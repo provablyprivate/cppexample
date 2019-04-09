@@ -1,27 +1,33 @@
 #include <string>
 #include "./jsonhandler.h"
 
-JSONHandler::JSONHandler(string input) {
-    variable = parser.parse(input);
+// JSONHandler::JSONHandler(string input) {
+//     object = parser.parse(input).extract<Object::Ptr>();
+// }
+
+JSONHandler::JSONHandler(Object::Ptr input) {
+    object = input;
 }
 
 JSONHandler::JSONHandler() {
-    variable = parser.parse("{}");
+    object = parser.parse("{}").extract<Object::Ptr>();
 }
 
 // Sets a new value
 void JSONHandler::put(string key, Var value) {
-    Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
-    obj->set(key, value);
+    object->set(key, value);
 }
 
 // Returns the dynamic variable
 Var JSONHandler::get(string data) {
-    Poco::JSON::Object::Ptr obj = variable.extract<Poco::JSON::Object::Ptr>();
-    return obj->get(data);
+    return object->get(data);
 }
 
 string JSONHandler::toString() {
-    return variable.convert<std::string>();
+    Poco::DynamicStruct ds = *object;
+    return ds.toString();
 }
 
+Poco::JSON::Object::Ptr JSONHandler::getObject() {
+	return object;
+}
