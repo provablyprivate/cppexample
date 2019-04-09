@@ -36,12 +36,21 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 
 endif()
 
-add_executable(client src/client.cpp)
-add_executable(server src/server.cpp)
-add_executable(json test/json_test.cpp)
-add_executable(com test/communication/com-test.cpp)
 
-target_link_libraries(client ${LIBS})
-target_link_libraries(server ${LIBS})
-target_link_libraries(json ${LIBS})
-target_link_libraries(com ${LIBS})
+add_executable(consenthandler src/consenthandler.cpp)
+add_executable(Parent src/Parent.cpp)
+add_executable(Child src/Child.cpp)
+add_executable(Website src/Website.cpp)
+add_executable(RChild src/RChild.cpp)
+add_executable(OChild src/OChild.cpp)
+
+
+add_executable(ThirdParty src/ThirdParty.cpp)
+
+
+target_link_libraries(consenthandler ${LIBS})
+target_link_libraries(Parent ${LIBS})
+target_link_libraries(Child ${LIBS})
+target_link_libraries(Website ${LIBS})
+target_link_libraries(RChild ${LIBS})
+target_link_libraries(OChild ${LIBS})
