@@ -70,7 +70,7 @@ public:
         
         iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
-        iWebsiteConnectionThread.start(*iWebsiteConnection);,
+        iWebsiteConnectionThread.start(*iWebsiteConnection);
     }
     
 };

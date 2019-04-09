@@ -37,7 +37,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 endif()
 
 
-add_executable(consenthandler src/consenthandler.cpp)
 add_executable(Parent src/Parent.cpp)
 add_executable(Child src/Child.cpp)
 add_executable(Website src/Website.cpp)
@@ -48,7 +47,6 @@ add_executable(OChild src/OChild.cpp)
 add_executable(ThirdParty src/ThirdParty.cpp)
 
 
-target_link_libraries(consenthandler ${LIBS})
 target_link_libraries(Parent ${LIBS})
 target_link_libraries(Child ${LIBS})
 target_link_libraries(Website ${LIBS})
