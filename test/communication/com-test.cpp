@@ -96,6 +96,14 @@ int main() {
     verifySignature(parPubCrypt, parSign, jsonPar->getObject());
     cout << "\nIt then checks the target child and forwards the JSON (with par sign)" << endl;
 
+    printf("\n********");
+    cout << "\nAs a test, we will try to corrupt the JSON and verify it against the signature again. Hopefully we will get an error\n" << endl;
+
+    jsonPar->put("Child", "1,2");
+    cout << jsonPar->toString() << endl;
+    verifySignature(parPubCrypt, parSign, jsonPar->getObject());
+    jsonPar->put("Child", "1");
+    printf("\n********");
 
     /* T3 */
     cout << "\n\n\n\n########## T3: AT CHILD ##########" << endl;
