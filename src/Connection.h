@@ -16,8 +16,13 @@
 class Connection: public Poco::Runnable {
 
 private:
-    // ConnectionInterface associated with this connection
-    ConnectionInterface *interface;
+    std::string arrivedData;
+    std::string unsentData;
+    
+    Poco::Event connectionEstablished = Poco::Event(true);
+    Poco::Event dataReceived = Poco::Event(true);
+    Poco::Event dataToSend = Poco::Event(true);
+    Poco::Event connectionClosed = Poco::Event(false);
 
     Poco::Net::SocketAddress address; // Used by the part that initiates the connection (the "client")
     Poco::Net::ServerSocket listener; // Used by the part that accepts the connection attempt (the "server")
@@ -31,8 +36,7 @@ private:
     // Creates the socket used to pass and receive messages, and signals the user that the connection is up
     void setUp() {
         socketStream = new Poco::Net::SocketStream(streamSocket);
-        std::cout << "Connection established\n";
-        interface->connectionEstablished.set();
+        connectionEstablished.set();
     }
     
     // Does a blocking read on the socket. Upon success, transfers data to connection interface and notifies user
@@ -40,19 +44,19 @@ private:
         std::string s;
         while (s != connectionTerminator) { 
             std::getline(*socketStream, s);
-            interface->arrivedData = s;
-            interface->dataReceived.set();
+            arrivedData = s;
+            dataReceived.set();
         }
-        interface->connectionClosed.set();
+        connectionClosed.set();
     }
     
     // Waits for data from the user to become available, then sends it through the socket
     void writeSocket() {
-        while (interface->unsentData != connectionTerminator) {
-            interface->dataToSend.wait();
-            *socketStream << interface->unsentData << std::endl;
+        while (unsentData != connectionTerminator) {
+            dataToSend.wait();
+            *socketStream << this->unsentData << std::endl;
         }
-        interface->connectionClosed.set();
+        connectionClosed.set();
     }
     
 public:
@@ -67,19 +71,34 @@ public:
     }
     
     // Called if this instance acts as server
-    Connection(int port, ConnectionInterface *iface) {
-        interface = iface;
+    Connection(int port) {
         listener = Poco::Net::ServerSocket(port, 64);
         streamSocket = listener.acceptConnection();
         setUp();
     }
     
     // Called if this instance acts as client
-    Connection(std::string ip, int port, ConnectionInterface *iface) {
-        interface = iface;
+    Connection(std::string ip, int port) {
         address = Poco::Net::SocketAddress(ip, port);
         streamSocket = Poco::Net::StreamSocket(address);
         setUp();
+    }
+    
+    void waitForEstablishment() {
+        connectionEstablished.wait();
+    }
+    
+    void waitForReceivedData() {
+        dataReceived.wait();
+    }
+    
+    void sendData(std::string s) {
+        unsentData = s;
+        dataToSend.set();
+    }
+    
+    std::string getData() {
+        return arrivedData;
     }
     
     // Called when a thread is started with this Connection object (after connectionEstablished has been signalled)
@@ -91,7 +110,7 @@ public:
         writerThread.start(writerFuncAdapt);
         
         // Wait for either of the threads to close the connection (one always will)
-        interface->connectionClosed.wait();
+        connectionClosed.wait();
     }
 
 };
