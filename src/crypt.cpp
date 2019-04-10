@@ -58,11 +58,11 @@ public:
 
     //Encryptes a string
     std::string encrypt(std::string a){
-        return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
+        return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BINHEX_NO_LF);
     }
     //Decrypt a string
     std::string decrypt(std::string a){
-        return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
+        return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BINHEX_NO_LF);;
     }
 
     // Signs a string with private key. Returns a hex string
