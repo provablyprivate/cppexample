@@ -1,9 +1,9 @@
 #include <string>
 #include "./jsonhandler.h"
 
-// JSONHandler::JSONHandler(string input) {
-//     object = parser.parse(input).extract<Object::Ptr>();
-// }
+JSONHandler::JSONHandler(string input) {
+    object = parser.parse(input).extract<Object::Ptr>();
+}
 
 JSONHandler::JSONHandler(Object::Ptr input) {
     object = input;
