@@ -65,7 +65,7 @@ public:
 
 
 int main(int argc, char **argv) {
-    RWebsite rWebsite(std::stoi(argv[2]), std::stoi(argv[3]));
+    RWebsite rWebsite(std::stoi(argv[1]), std::stoi(argv[2]));
     rWebsite.run();
     
     return 0;

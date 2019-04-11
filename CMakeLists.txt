@@ -44,7 +44,7 @@ add_executable(RChild src/RChild.cpp)
 add_executable(com test/communication/com-test.cpp)
 add_executable(OChild src/OChild.cpp)
 add_executable(RWebsite src/RWebsite.cpp)
-
+add_executable(IWebsite src/IWebsite.cpp)
 
 add_executable(ThirdParty src/ThirdParty.cpp)
 
@@ -56,3 +56,4 @@ target_link_libraries(RChild ${LIBS})
 target_link_libraries(com ${LIBS})
 target_link_libraries(OChild ${LIBS})
 target_link_libraries(RWebsite ${LIBS})
+target_link_libraries(IWebsite ${LIBS})
