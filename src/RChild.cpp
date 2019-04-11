@@ -13,6 +13,7 @@ private:
         while (true) {
             childConnection->waitForReceivedData();
             s = childConnection->getData();
+            std::cout << "Received " << s << " from Child, sending it to OChild" << std::endl;
             oChildConnection->sendData(s);
         }
         
@@ -20,15 +21,15 @@ private:
     
 public:
     RChild(int websitePortUsedByChild) {
-        childConnection = new Connection(websitePortUsedByChild);
         oChildConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
+        childConnection = new Connection(websitePortUsedByChild);
     }
     
     void run() {
         
         oChildConnection->waitForEstablishment();
         Poco::Thread oChildConnectionThread;
-        oChildConnectionThread.start(*oChildConnection);
+        oChildConnectionThread.start(*oChildConnection); std::cout << "est";
         
         childConnection->waitForEstablishment();
         Poco::Thread childConnectionThread;
@@ -40,7 +41,7 @@ public:
 };
 
 int main(int argc, char **argv) {
-    RChild rChild(std::stoi(argv[2]));
+    RChild rChild(std::stoi(argv[1]));
     rChild.run();
     
     return 0;
