@@ -1,8 +1,17 @@
+/*
+ * MISSING
+ * function to send messate to Iwebsite
+ */
+
 #include "Constants.h"
 #include "Connection.h"
 #include "./crypt.cpp"
 #include "./jsonhandler.cpp"
-#include <regex>
+#include "Poco/HexBinaryEncoder.h"
+#include "Poco/HexBinaryDecoder.h"
+#include "Poco/RegularExpression.h"
+#include "Poco/StreamCopier.h"
+#include <bitset>
 
 class OChild {
 
@@ -14,24 +23,34 @@ private:
     Crypt * publicParentCrypt;
     Crypt * publicWebsiteCrypt;
     JSONHandler * childJSON;
+    std::bitset<2> flags;
+    bool validSignature;
 
-    bool verifySignature(Crypt* key, string signature, Object::Ptr json) {
-        return key->verify(json, signature);
+    std::vector<std::string> decodeHex(std::string input){
+        std::string decoded;
+        std::istringstream istream(input);                    // Reads the incoming message to the istream
+        Poco::HexBinaryDecoder decoder(istream);              // Decodes the hex-message.
+        Poco::StreamCopier::copyToString(decoder, decoded);   // Appends the decoded message it to 'decoded' variable
+
+        std::string REGEX = "([\\s\\S]*)\n----BEGIN SIGNATURE----\n([\\s\\S]*)"; // creates two groups, before and after "begin signature" field
+        Poco::RegularExpression re (REGEX);
+        std::vector<std::string> matches;
+        re.split(decoded, matches);                           // Splits the string with the above given regex
+
+        return matches;
     }
 
-    void rChildConnectionHandler() {
-        rChildConnection->waitForEstablishment();
-        Poco::Thread rChildConnectionThread;
-        rChildConnectionThread.start(*rChildConnection);
+    std::string encodeHex(JSONHandler * JSON, std::string Signature){
+        std::stringstream toEncode;
+        JSON->getObject()->stringify(toEncode);                 // Stringifies the JSON
+        toEncode << "\n----BEGIN SIGNATURE----\n" << Signature; // Appends the neccessary strings
 
-        std::string s;
-        while (true) {
-            rChildConnection->waitForReceivedData();
-            s = rChildConnection->getData();
-            // assemble term
-            std::cout << "Received from RChild: " << s << std::endl;
-            iWebsiteConnection->sendData(s);
-        }
+        std::ostringstream encoded;
+        Poco::HexBinaryEncoder encoder(encoded);                // in parameter will be encoded to Hex
+        encoder << toEncode.str();
+        encoder.flush();
+
+        return encoded.str();
     }
 
     void oWebsiteConnectionHandler() {
@@ -44,36 +63,24 @@ private:
             oWebsiteConnection->waitForReceivedData();
             s = oWebsiteConnection->getData();
             std::cout << "Received from OWebsite: " << s << std::endl;
-        }
-    }
 
-    void oWebsiteHandler() {
-        oWebsiteConnection->waitForEstablishment();
-        Poco::Thread oWebsiteConnectionThread;
-        oWebsiteConnectionThread.start(*oWebsiteConnection);
+            std::vector<std::string> messages = decodeHex(s);       // Recieves a decoded and deconstructed message
 
-        std::string s;
-        while (true) {
-            oWebsiteConnection->waitForReceivedData();
-            s = oWebsiteConnection->getData();
-            std::cout << "Received from OWebsite: " << s << std::endl;
+            JSONHandler * previousJSON = new JSONHandler(messages[1]); // creating JSON from the parsed string
+            std::string previousSignature = messages[2];               // creating signature from the parsed string
 
-            std::regex regex ("([\\s\\S]*)\n----BEGIN SIGNATURE----\n([\\s\\S]*)");   // matches words beginning by "sub"
-            std::smatch match;
-            regex_search(s, match, regex);
-
-            JSONHandler * previousJSON = new JSONHandler(match[1]); // creating JSON from the parsed string
-            std::string previousSignature = match[2];               // creating signature from the parsed string
+            validSignature = publicParentCrypt->verify(previousJSON->getObject(), previousSignature);
+            if (not validSignature) continue;                       // Resets the while loop if invalid signature
 
             childJSON->put("PrevJson", previousJSON->getObject());  // Get the object and puts it in the JSON
             childJSON->put("PrevSign", previousSignature);          // Puts the signature
 
-            //*update flag*
+            flags |= 0b10; //update flag
             //*notify thread*
         }
     }
 
-    void rChildHandler() {
+    void rChildConnectionHandler() {
         rChildConnection->waitForEstablishment();
         Poco::Thread rChildConnectionThread;
         rChildConnectionThread.start(*rChildConnection);
@@ -87,7 +94,7 @@ private:
             string encryptedData = publicWebsiteCrypt->encrypt(s);  // encrypts the data
             childJSON->put("Value", encryptedData);                 // Puts it in the JSON
 
-            //*update flag*
+            flags |= 0b01; //update flag
             //*notify thread*
         }
     }
@@ -101,6 +108,7 @@ public:
         publicParentCrypt = new Crypt("./rsa-keys/parent.pub");
         publicWebsiteCrypt = new Crypt("./rsa-keys/website.pub");
         childJSON = new JSONHandler();
+        flags = 0b00;
     }
 
     void run() {
@@ -128,11 +136,5 @@ int main(int argc, char **argv) {
     OChild oChild(argv[2]);
     oChild.run();
 
-
-    rchildhandler
-    oWebsitehandler
-    checkifjsoncomplete()
-
     return 0;
 }
-
