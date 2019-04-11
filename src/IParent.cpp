@@ -45,7 +45,36 @@ class IParent {
         return encoded.str();
     }
 
-    void oWebsiteConnectionHandler() {
+    void rParentConnectionHandler() {
+        rParentConnection->waitForEstablishment();
+        Poco::Thread rParentConnectionThread;
+        rParentConnectionThread.start(*rParentConnection);
+
+        while (true) {
+            JSONVerified.wait();
+            std::string encrypted = websiteJSON->get("Value");
+            std::string decrypted = privateParentCrypt->decrypt(encrypted);
+
+            std::cout << "Decrypted message: " << decrypted << std::endl;
+
+            std::string message = encodeHex(websiteJSON, decrypted);
+            rParentConnection->sendData(message);
+        }
+    }
+
+ public:
+    IParent(std::string websiteIP) {
+        rParentConnection = new Connection(I_INTERNAL_PORT);
+        oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_2);  // different port??
+        privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub", "./src/rsa-keys/parent");
+        publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
+    }
+
+    void run() {
+        Poco::RunnableAdapter<IParent> rParentFuncAdapt(*this, &IParent::rParentConnectionHandler);
+        Poco::Thread rParentConnectionHandlerThread;
+        rParentConnectionHandlerThread.start(rParentFuncAdapt);
+
         oWebsiteConnection->waitForEstablishment();
         Poco::Thread oWebsiteConnectionThread;
         oWebsiteConnectionThread.start(*oWebsiteConnection);
@@ -67,41 +96,6 @@ class IParent {
             // flags |= 0b10; //update flag
             JSONVerified.set();
         }
-    }
-
-    void rParentConnectionHandler() {
-        rParentConnection->waitForEstablishment();
-        Poco::Thread rParentConnectionThread;
-        rParentConnectionThread.start(*rParentConnection);
-
-        while (true) {
-            JSONVerified.wait();
-            std::string encrypted = websiteJSON->get("Value");
-            std::string decrypted = privateParentCrypt->decrypt(encrypted);
-
-            std::cout << "Decrypted message: " << decrypted << std::endl;
-
-            std::string message = encodeHex(websiteJSON, decrypted);
-            rParentConnection->sendData(message);
-        }
-    }
-
- public:
-    IParent(std::string websiteIP) {
-        rParentConnection = new Connection(O_INTERNAL_PORT);
-        oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);  // different port??
-        privateParentCrypt = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
-        publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
-    }
-
-    void run() {
-        Poco::RunnableAdapter<IParent> rParentFuncAdapt(*this, &IParent::rParentConnectionHandler);
-        Poco::Thread rParentConnectionHandlerThread;
-        rParentConnectionHandlerThread.start(rParentFuncAdapt);
-
-        Poco::RunnableAdapter<IParent> oWebsiteFuncAdapt(*this, &IParent::oWebsiteConnectionHandler);
-        Poco::Thread oWebsiteConnectionHandlerThread;
-        oWebsiteConnectionHandlerThread.start(oWebsiteFuncAdapt);
     }
 };
 
