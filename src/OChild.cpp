@@ -1,8 +1,3 @@
-/*
- * MISSING
- * function to send messate to Iwebsite
- */
-
 #include "Constants.h"
 #include "Connection.h"
 #include "./crypt.cpp"
@@ -33,7 +28,7 @@ private:
         Poco::HexBinaryDecoder decoder(istream);              // Decodes the hex-message.
         Poco::StreamCopier::copyToString(decoder, decoded);   // Appends the decoded message it to 'decoded' variable
 
-        std::string REGEX = "([\\s\\S]*)\n----BEGIN SIGNATURE----\n([\\s\\S]*)"; // creates two groups, before and after "begin signature" field
+        std::string REGEX = "([\\s\\S]*)\n-----BEGIN SIGNATURE-----\n([\\s\\S]*)"; // creates two groups, before and after "begin signature" field
         Poco::RegularExpression re (REGEX);
         std::vector<std::string> matches;
         re.split(decoded, matches);                           // Splits the string with the above given regex
@@ -44,7 +39,7 @@ private:
     std::string encodeHex(JSONHandler * JSON, std::string Signature){
         std::stringstream toEncode;
         JSON->getObject()->stringify(toEncode);                 // Stringifies the JSON
-        toEncode << "\n----BEGIN SIGNATURE----\n" << Signature; // Appends the neccessary strings
+        toEncode << "\n-----BEGIN SIGNATURE-----\n" << Signature; // Appends the neccessary strings
 
         std::ostringstream encoded;
         Poco::HexBinaryEncoder encoder(encoded);                // in parameter will be encoded to Hex
@@ -77,7 +72,7 @@ private:
             childJSON->put("PrevSign", previousSignature);          // Puts the signature
 
             flags |= 0b10; //update flag
-            //*notify thread*
+            JSONUpdated.set();
         }
     }
 
@@ -96,7 +91,6 @@ private:
             childJSON->put("Value", encryptedData);                 // Puts it in the JSON
 
             flags |= 0b01; //update flag
-            //*notify thread*
             JSONUpdated.set();
         }
     }
@@ -106,7 +100,7 @@ public:
         rChildConnection = new Connection(O_INTERNAL_PORT);
         //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
         //oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);
-        
+
         privateChildCrypt = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
         publicParentCrypt = new Crypt("./src/rsa-keys/parent.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
@@ -131,11 +125,17 @@ public:
         iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);*/
-        
+
         while (true) {
             JSONUpdated.wait();
-            //check flags, send if done
-            
+            if (flags.all()) {
+                std::string signature = privateChildCrypt->sign(childJSON->getObject());
+                std::string message = encodeHex(childJSON, signature);
+                iWebsiteConnection->sendData(message);
+                flags = 0b00;
+            } else {
+                continue;
+            }
         }
     }
 };
