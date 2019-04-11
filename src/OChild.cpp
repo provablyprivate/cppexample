@@ -115,23 +115,25 @@ public:
         Poco::Thread rChildConnectionHandlerThread;
         rChildConnectionHandlerThread.start(rChildFuncAdapt);
 
-
+        iWebsiteConnection->waitForEstablishment();
+        Poco::Thread iWebsiteConnectionThread;
+        iWebsiteConnectionThread.start(*iWebsiteConnection);
+        
         Poco::RunnableAdapter<OChild> oWebsiteFuncAdapt(*this, &OChild::oWebsiteConnectionHandler);
         Poco::Thread oWebsiteConnectionHandlerThread;
         oWebsiteConnectionHandlerThread.start(oWebsiteFuncAdapt);
 
-        iWebsiteConnection->waitForEstablishment();
-        Poco::Thread iWebsiteConnectionThread;
-        iWebsiteConnectionThread.start(*iWebsiteConnection);
 
         while (true) {
             JSONUpdated.wait();
             if (flags.all()) {
                 std::string signature = privateChildCrypt->sign(childJSON->getObject());
                 std::string message = encodeHex(childJSON, signature);
+                std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
                 flags = 0b00;
             } else {
+                if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
                 continue;
             }
         }
@@ -139,6 +141,7 @@ public:
 };
 
 int main(int argc, char **argv) {
+    //if (DEBUG) freopen("./errorlogOC.txt", "a", stdout);
     try {OChild oChild(argv[1]);
         oChild.run();
     }

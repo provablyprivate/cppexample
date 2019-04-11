@@ -36,6 +36,7 @@ private:
     // Creates the socket used to pass and receive messages, and signals the user that the connection is up
     void setUp() {
         socketStream = new Poco::Net::SocketStream(streamSocket);
+        std::cout << "Connection established" << std::endl;
         connectionEstablished.set();
     }
     

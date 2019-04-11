@@ -1,6 +1,6 @@
 #include "Constants.h"
 #include "Connection.h"
-
+#include <stdlib.h>
 
 class RParent {
 private:
@@ -17,13 +17,15 @@ private:
         while (true) {
             iParentConnection->waitForReceivedData();
             s = iParentConnection->getData();
-            // skicka vidare till parent eller oparent
+            std::cout << "Received from IParent: " << s << std::endl;
+            // pass it along to parent (and oparent?)
+            if (DEBUG) { std::cout << "Sending it to Parent" << std::endl; parentConnection->sendData(s); }
         }
     }
     
 public:
     RParent(int webSitePortUsedByParent) {
-        iParentConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
+        iParentConnection = new Connection(LOCALHOST, I_INTERNAL_PORT); sleep(1);
         oParentConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
         parentConnection = new Connection(webSitePortUsedByParent);
     }
@@ -45,13 +47,15 @@ public:
         while (true) {
             parentConnection->waitForReceivedData();
             s = parentConnection->getData();
-            oParentConnection->sendData(s);
+            std::cout << "Received from Parent: " << s << std::endl;
+            if (DEBUG) { std::cout << "Sending it to OParent" << std::endl; oParentConnection->sendData(s); }
         }
     }
     
 };
     
 int main(int argc, char **argv) {
+    //if (DEBUG) freopen("./errorlogRP.txt", "a", stdout);
     RParent rParent(std::stoi(argv[1]));
     rParent.run();
     
