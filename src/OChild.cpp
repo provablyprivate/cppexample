@@ -25,6 +25,7 @@ private:
     JSONHandler * childJSON;
     std::bitset<2> flags;
     bool validSignature;
+    Poco::Event JSONUpdated = Poco::Event(true);
 
     std::vector<std::string> decodeHex(std::string input){
         std::string decoded;
@@ -96,17 +97,19 @@ private:
 
             flags |= 0b01; //update flag
             //*notify thread*
+            JSONUpdated.set();
         }
     }
 
 public:
     OChild(std::string websiteIP) {
         rChildConnection = new Connection(O_INTERNAL_PORT);
-        iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
-        oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);
-        privateChildCrypt = new Crypt("./rsa-keys/child", "./rsa-keys/child.pub");
-        publicParentCrypt = new Crypt("./rsa-keys/parent.pub");
-        publicWebsiteCrypt = new Crypt("./rsa-keys/website.pub");
+        //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
+        //oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);
+        
+        privateChildCrypt = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
+        publicParentCrypt = new Crypt("./src/rsa-keys/parent.pub");
+        publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
         childJSON = new JSONHandler();
         flags = 0b00;
     }
@@ -121,20 +124,28 @@ public:
         Poco::Thread iWebsiteConnectionHandlerThread;
         iWebsiteConnectionHandlerThread.start(iWebsiteFuncAdapt);*/
 
-        Poco::RunnableAdapter<OChild> oWebsiteFuncAdapt(*this, &OChild::oWebsiteConnectionHandler);
+        /*Poco::RunnableAdapter<OChild> oWebsiteFuncAdapt(*this, &OChild::oWebsiteConnectionHandler);
         Poco::Thread oWebsiteConnectionHandlerThread;
         oWebsiteConnectionHandlerThread.start(oWebsiteFuncAdapt);
 
         iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
-        iWebsiteConnectionThread.start(*iWebsiteConnection);
+        iWebsiteConnectionThread.start(*iWebsiteConnection);*/
+        
+        while (true) {
+            JSONUpdated.wait();
+            //check flags, send if done
+            
+        }
     }
-
 };
 
 int main(int argc, char **argv) {
-    OChild oChild(argv[2]);
-    oChild.run();
-
+    try {OChild oChild(argv[1]);
+        oChild.run();
+    }
+    catch (Poco::FileException e) {
+        std::cout << e.what();
+    }
     return 0;
 }
