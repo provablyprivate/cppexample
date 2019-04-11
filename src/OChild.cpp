@@ -105,6 +105,7 @@ public:
         publicParentCrypt = new Crypt("./src/rsa-keys/parent.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
         childJSON = new JSONHandler();
+        childJSON->put("Type", "PDATA");  // This might now follow type system!!!!
         flags = 0b00;
     }
 
