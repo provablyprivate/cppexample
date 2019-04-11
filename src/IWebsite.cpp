@@ -23,7 +23,7 @@ private:
     
 public:
     IWebsite() {
-        rWebsiteConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
+        rWebsiteConnection = new Connection(I_INTERNAL_PORT);
         oChildConnection = new Connection(I_EXTERNAL_PORT_1);
         oParentConnection = new Connection(I_EXTERNAL_PORT_2);
     }

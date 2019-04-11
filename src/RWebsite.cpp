@@ -29,8 +29,8 @@ private:
     
 public:
     RWebsite(int parentPort, int childPort) {
-        iWebsiteConnection = new Connection(I_INTERNAL_PORT);
-        oWebsiteConnection = new Connection(O_INTERNAL_PORT);
+        iWebsiteConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
+        oWebsiteConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
         websiteParentConnection = new Connection(LOCALHOST, parentPort);
         websiteChildConnection = new Connection(LOCALHOST, childPort);
     }

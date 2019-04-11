@@ -53,14 +53,19 @@ def run():
     net.start()
     
     ifaceID = net.getNodeByName(switchName).intfNames()[1]
+
+    makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {}".format(websitePortForParent, websitePortForChild))
     
     if extendedArchitecture:
-        #website
+        makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./IWebsite")
+        makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./OWebsite")
+        makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./RWebsite {} {}".format(websitePortForParent, websitePortForChild))
+        sleep(1)
         makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./OChild {}".format(websiteIP))
         sleep(1)
         makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./RChild {}".format(websitePortForChild))
         sleep(1)
-    #makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {}".format(websitePortForParent, websitePortForChild))
+
     #sleep(2)
     #makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./Parent {} {}".format(websiteIPUsedByParent, websitePortForParent))
     makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./Child {} {}".format(websiteIPUsedByChild, websitePortForChild))

@@ -10,7 +10,7 @@ private:
     
 public:
     OWebsite() {
-        rWebsiteConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
+        rWebsiteConnection = new Connection(O_INTERNAL_PORT);
         oChildConnection = new Connection(O_EXTERNAL_PORT_1);
         iParentConnection = new Connection(O_EXTERNAL_PORT_2);        
     }
