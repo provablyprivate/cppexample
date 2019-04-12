@@ -2,7 +2,6 @@
 #include "../Connection.h"
 #include "../Crypt.cpp"
 #include "../Jsonhandler.cpp"
-#include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
@@ -43,19 +42,6 @@ private:
         }
 
         return matches;
-    }
-
-    std::string encodeHex(JSONHandler * JSON, std::string Signature) {
-        std::stringstream toEncode;
-        JSON->getObject()->stringify(toEncode);                 // Stringifies the JSON
-        toEncode << "\n-----BEGIN SIGNATURE-----\n" << Signature; // Appends the neccessary strings
-
-        std::ostringstream encoded;
-        Poco::HexBinaryEncoder encoder(encoded);                // in parameter will be encoded to Hex
-        encoder << toEncode.str();
-        encoder.flush();
-
-        return encoded.str();
     }
 
     void rParentConnectionHandler() {
@@ -127,7 +113,7 @@ public:
             JSONUpdated.wait();
             if (flags.all()) {
                 std::string signature = privateParentCrypt->sign(parentJSON->getObject());
-                std::string message = encodeHex(parentJSON, signature);
+                std::string message = parentJSON->toHex() + "." + signature;
                 iWebsiteConnection->sendData(message);
                 flags = 0b00;
             } else {

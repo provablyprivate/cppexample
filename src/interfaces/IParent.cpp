@@ -2,7 +2,6 @@
 #include "../Connection.h"
 #include "../Crypt.cpp"
 #include "../Jsonhandler.cpp"
-#include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
@@ -14,6 +13,7 @@ class IParent {
     Crypt * privateParentCrypt;
     Crypt * publicWebsiteCrypt;
     JSONHandler * websiteJSON;
+    std::string recievedMessage;
     bool validSignature;
     Poco::Event JSONVerified = Poco::Event(true);
 
@@ -31,16 +31,12 @@ class IParent {
         return matches;
     }
 
-    std::string encodeHex(JSONHandler * JSON, std::string decrypted ) {
-        std::stringstream toEncode;
-        JSON->getObject()->stringify(toEncode);     // Stringifies the JSON
-        toEncode << "\n-----BEGIN DECRYPTED-----\n" << decrypted;  // Appends the neccessary strings
-
-
+    std::string encodeHex(std::string string) {
         std::ostringstream encoded;
-        Poco::HexBinaryEncoder encoder(encoded);    // in parameter will be encoded to Hex
-        encoder << toEncode.str();
-        encoder.flush();
+        Poco::HexBinaryEncoder encoder(encoded);
+        encoder.rdbuf()->setLineLength(0);
+        encoder << string;
+        encoder.close();
 
         return encoded.str();
     }
@@ -52,13 +48,13 @@ class IParent {
 
         while (true) {
             JSONVerified.wait();
-            /*std::string encrypted = websiteJSON->get("Value");
-            std::string decrypted = privateParentCrypt->decrypt(encrypted);
-
-            std::cout << "Decrypted message: " << decrypted << std::endl;
-
-            std::string message = encodeHex(websiteJSON, decrypted);
-            rParentConnection->sendData(message);*/
+            // std::string encrypted = websiteJSON->get("Value");
+            // std::string decrypted = privateParentCrypt->decrypt(encrypted);
+            //
+            // std::cout << "Decrypted message: " << decrypted << std::endl;
+            //
+            // std::string message = recievedMessage + "." + encodeHex(decrypted);
+            // rParentConnection->sendData(message);
 
             if (DEBUG) rParentConnection->sendData("Some test data from IParent");
         }
@@ -96,6 +92,7 @@ class IParent {
             validSignature = publicWebsiteCrypt->verify(websiteJSON->getObject(), websiteSignature);
             if (!validSignature) continue;                       // Resets the while loop if invalid signature
 
+            recievedMessage = s;
             // flags |= 0b10; //update flag*/
             JSONVerified.set();
         }

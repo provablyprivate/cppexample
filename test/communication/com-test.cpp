@@ -4,6 +4,7 @@
 #include "Poco/RegularExpression.h"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
+#include "Poco/RegularExpression.h"
 #include "../../src/Crypt.cpp"
 #include "../../src/Jsonhandler.cpp"
 

@@ -72,3 +72,22 @@ string JSONHandler::toString() {
 Object::Ptr JSONHandler::getObject() {
     return object;
 }
+
+/*! \brief Returns the JSON object as a hex string
+ *
+ * Poco::BinaryHexEncoder is used to convert a stringstream into a hex string.
+ * The toString function is fed into the stringstream to be converted.
+ * setLineLength is set to 0 in the encoder to remove the standard 72 character
+ * length before a new line is inserted.
+ *
+ * \return std::string encoded.str()
+ */
+string JSONHandler::toHex() {
+    std::ostringstream encoded;
+    Poco::HexBinaryEncoder encoder(encoded);
+    encoder.rdbuf()->setLineLength(0);
+    encoder << toString();
+    encoder.close();
+
+    return encoded.str();
+}

@@ -3,6 +3,7 @@
 #ifndef SRC_JSONHANDLER_H_
 #define SRC_JSONHANDLER_H_
 #include "Poco/JSON/Parser.h"
+#include "Poco/HexBinaryEncoder.h"
 
 using std::string;
 using Poco::Dynamic::Var;
@@ -21,6 +22,7 @@ class JSONHandler {
     void put(string key, Var value);
     Var get(string data);
     string toString();
+    string toHex();
     Object::Ptr getObject();
 };
 
