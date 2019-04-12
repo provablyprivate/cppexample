@@ -18,12 +18,13 @@ private:
             oChildConnection->waitForReceivedData();
             s = oChildConnection->getData();
             //decrypt etc, pass to RWebsite
+            if (DEBUG) { std::cout << "Received from OChild: " << s << ", sending it to RWebsite" << std::endl; rWebsiteConnection->sendData(s); }
         }
     }
 
 public:
     IWebsite() {
-        rWebsiteConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
+        rWebsiteConnection = new Connection(I_INTERNAL_PORT);
         oChildConnection = new Connection(I_EXTERNAL_PORT_1);
         oParentConnection = new Connection(I_EXTERNAL_PORT_2);
     }
@@ -46,6 +47,7 @@ public:
             oParentConnection->waitForReceivedData();
             s = oParentConnection->getData();
             // decrypt, verify signature etc, pass to RWebsite
+            if (DEBUG) { std::cout << "Received from OParent: " << s << ", sending it to RWebsite" << std::endl; rWebsiteConnection->sendData(s); }
         }
     }
 
@@ -53,6 +55,7 @@ public:
 };
 
 int main() {
+    //if (DEBUG) freopen("./errorlogIW.txt", "a", stdout);
     IWebsite iWebsite;
     iWebsite.run();
 }

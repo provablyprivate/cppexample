@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include "./Constants.h"
 #include "../Connection.h"
+#include <stdlib.h>
 
 class RParent {
 private:

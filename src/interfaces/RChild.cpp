@@ -29,7 +29,7 @@ public:
 
         oChildConnection->waitForEstablishment();
         Poco::Thread oChildConnectionThread;
-        oChildConnectionThread.start(*oChildConnection); std::cout << "est";
+        oChildConnectionThread.start(*oChildConnection);
 
         childConnection->waitForEstablishment();
         Poco::Thread childConnectionThread;
@@ -41,6 +41,7 @@ public:
 };
 
 int main(int argc, char **argv) {
+    //if (DEBUG) freopen("./errorlogRC.txt", "a", stdout);
     RChild rChild(std::stoi(argv[1]));
     rChild.run();
 
