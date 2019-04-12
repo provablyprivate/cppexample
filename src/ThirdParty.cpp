@@ -4,12 +4,15 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+// TODO: Verify that message is typable under the type system
 void verify(std::string sender, std::string receiver, std::string message) {
     std::cout << sender << " -> " << receiver << ":\n" << message << std::endl << std::endl;
 }
 
 int main(int argc, char **argv) {
     std::string ifaceID = argv[1];
+    
+    // Store names for the different hosts
     std::map<std::string, std::string> hostIP;
     hostIP[argv[2]] = "Website";
     hostIP[argv[3]] = "Parent";
