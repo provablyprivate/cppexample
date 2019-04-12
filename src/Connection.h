@@ -9,16 +9,17 @@
 #include "Poco/Event.h"
 
 /*
- * Class that models connections to remote hosts. Used with a ConnectionInterface to hide low-level details
- * If instantiated with socket and ConnectionInterface, it waits for incoming connections
- * If instantiated with ip, socket and ConnectionInterface, it attempts to connect to the socket at the ip
+ * Class that models connections to remote hosts.
+ * If instantiated with socket, it waits for incoming connections.
+ * If instantiated with ip and socket, it attempts to connect to the socket at the ip.
  */
 class Connection: public Poco::Runnable {
 
 private:
-    std::string arrivedData;
-    std::string unsentData;
+    std::string arrivedData; // Data received from the socket that is to be passed to the client
+    std::string unsentData; // Data from the user that is to be sent through the socket
     
+    // Events used internally
     Poco::Event connectionEstablished = Poco::Event(true);
     Poco::Event dataReceived = Poco::Event(true);
     Poco::Event dataToSend = Poco::Event(true);
@@ -31,12 +32,14 @@ private:
     Poco::Net::SocketStream *socketStream;
     Poco::Thread readerThread;
     Poco::Thread writerThread;
-    
+
+    // Some special string that, when sent or received, terminates the connection
+    std::string connectionTerminator = "bye";
 
     // Creates the socket used to pass and receive messages, and signals the user that the connection is up
     void setUp() {
         socketStream = new Poco::Net::SocketStream(streamSocket);
-        std::cout << "Connection established" << std::endl;
+        //std::cout << "Connection established" << std::endl;
         connectionEstablished.set();
     }
     
@@ -85,32 +88,39 @@ public:
         setUp();
     }
     
+    // Users call this to block waiting for the connection to be established
     void waitForEstablishment() {
         connectionEstablished.wait();
     }
-    
+    // Users call this to block waiting for incoming data
     void waitForReceivedData() {
         dataReceived.wait();
     }
-    
+     // Users call this to send data
     void sendData(std::string s) {
         unsentData = s;
         dataToSend.set();
     }
     
+    // Users call this to get data from the connection. Should be used in conjunction with waitForReceivedData()
     std::string getData() {
         return arrivedData;
     }
     
+    // Users may call this to close the connection
+    void closeConnection() {
+        connectionClosed.set();
+    }
+    
     // Called when a thread is started with this Connection object (after connectionEstablished has been signalled)
-    // Creates two threads that, respectively reads from and writes to the socket
+    // Creates two threads that, respectively, reads from and writes to the socket
     virtual void run() {
         Poco::RunnableAdapter<Connection> readerFuncAdapt(*this, &Connection::readSocket);
         Poco::RunnableAdapter<Connection> writerFuncAdapt(*this, &Connection::writeSocket);
         readerThread.start(readerFuncAdapt); 
         writerThread.start(writerFuncAdapt);
         
-        // Wait for either of the threads to close the connection (one always will)
+        // Wait for either of the threads or the user to close the connection
         connectionClosed.wait();
     }
 
