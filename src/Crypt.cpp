@@ -1,3 +1,8 @@
+#include <string>
+#include "./Crypt.h"
+#include <vector>
+#include <iostream>
+#include <stdexcept>
 #include "Poco/Crypto/CryptoStream.h"
 #include "Poco/Crypto/Cipher.h"
 #include "Poco/Crypto/CipherFactory.h"
@@ -5,11 +10,7 @@
 #include "Poco/Crypto/RSAKey.h"
 #include "Poco/Crypto/RSADigestEngine.h"
 #include "Poco/Crypto/DigestEngine.h"
-#include <iostream>
-#include <string.h>
-#include <stdexcept>
-#include <Poco/JSON/Object.h>
-#include "crypt.h"
+#include "Poco/JSON/Object.h"
 
 /*  Usage
  *      Create an instance of the crypt class.
@@ -22,7 +23,6 @@
 using namespace Poco::Crypto;
 
 class Crypt{
-
  private:
     Cipher* cipher;
     RSADigestEngine* digestEngine;

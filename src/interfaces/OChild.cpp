@@ -1,16 +1,15 @@
-#include "Constants.h"
-#include "Connection.h"
-#include "./crypt.cpp"
-#include "./jsonhandler.cpp"
+#include <bitset>
+#include "./Constants.h"
+#include "../Crypt.cpp"
+#include "../Connection.h"
+#include "../Jsonhandler.cpp"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
-#include <bitset>
 
 class OChild {
-
-private:
+ private:
     Connection *rChildConnection;
     Connection *iWebsiteConnection;
     Connection *oWebsiteConnection;
@@ -22,7 +21,7 @@ private:
     bool validSignature;
     Poco::Event JSONUpdated = Poco::Event(true);
 
-    std::vector<std::string> decodeHex(std::string input){
+    std::vector<std::string> decodeHex(std::string input) {
         std::string decoded;
         std::istringstream istream(input);                    // Reads the incoming message to the istream
         Poco::HexBinaryDecoder decoder(istream);              // Decodes the hex-message.
@@ -36,7 +35,7 @@ private:
         return matches;
     }
 
-    std::string encodeHex(JSONHandler * JSON, std::string Signature){
+    std::string encodeHex(JSONHandler * JSON, std::string Signature) {
         std::stringstream toEncode;
         JSON->getObject()->stringify(toEncode);                 // Stringifies the JSON
         toEncode << "\n-----BEGIN SIGNATURE-----\n" << Signature; // Appends the neccessary strings
@@ -95,7 +94,7 @@ private:
         }
     }
 
-public:
+ public:
     OChild(std::string websiteIP) {
         rChildConnection = new Connection(O_INTERNAL_PORT);
         //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);

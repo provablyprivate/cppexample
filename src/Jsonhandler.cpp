@@ -1,5 +1,5 @@
 #include <string>
-#include "./jsonhandler.h"
+#include "./Jsonhandler.h"
 
 /*! \brief Parses a string to a JSON object
  *

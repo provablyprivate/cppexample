@@ -2,7 +2,6 @@
 
 #ifndef SRC_JSONHANDLER_H_
 #define SRC_JSONHANDLER_H_
-
 #include "Poco/JSON/Parser.h"
 
 using std::string;

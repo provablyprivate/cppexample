@@ -1,16 +1,15 @@
-#include "Constants.h"
-#include "Connection.h"
-#include "./crypt.cpp"
-#include "./jsonhandler.cpp"
+#include <bitset>
+#include "./Constants.h"
+#include "../Crypt.cpp"
+#include "../Connection.h"
+#include "../Jsonhandler.cpp"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
-#include <bitset>
 
 class OParent {
-
-private:
+ private:
     Connection *rParentConnection;
     Connection *iWebsiteConnection;
     Crypt * privateParentCrypt;
@@ -93,7 +92,7 @@ private:
         }
     }
 
-public:
+ public:
     OParent(std::string websiteIP) {
         rParentConnection = new Connection(O_INTERNAL_PORT);
         //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);

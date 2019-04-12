@@ -4,8 +4,8 @@
 #include "Poco/RegularExpression.h"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
-#include "../../src/crypt.cpp"
-#include "../../src/jsonhandler.cpp"
+#include "../../src/Crypt.cpp"
+#include "../../src/Jsonhandler.cpp"
 
 
 using namespace Poco;
