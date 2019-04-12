@@ -7,7 +7,6 @@
 #include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
 #include <bitset>
-#include <stdlib.h>
 
 class OParent {
 
@@ -65,14 +64,10 @@ private:
 
         std::string s;
         while (true) {
-            rParentConnection->waitForReceivedData();       
+            rParentConnection->waitForReceivedData();
             s = rParentConnection->getData();
-            std::cout << "Received from RParent: " << s << std::endl;
-            
-            if (DEBUG) { std::cout << "Sending it to IWebsite" << std::endl; iWebsiteConnection->sendData(s); }
-            
-            /* !!!!!!!!!!!!!!!!!!!!!!
-             * Segfault in decodeHex()
+            std::cout << "Received from RChild: " << s << std::endl;
+
             std::vector<std::string> messages = decodeHex(s);       // Recieves a decoded and deconstructed message
 
             if (sizeof(messages[2]) > 0) {  // if it's a json. BAD???
@@ -94,14 +89,15 @@ private:
                 parentJSON->put("Value", encryptedData);
                 flags |= 0b01; //update flag
                 JSONUpdated.set();
-            }*/
+            }
         }
     }
 
 public:
     OParent(std::string websiteIP) {
         rParentConnection = new Connection(O_INTERNAL_PORT);
-        iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_2);
+        //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
+        //oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);
 
         privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub","./src/rsa-keys/parent");
         publicChildCrypt = new Crypt("./src/rsa-keys/child.pub");
@@ -116,13 +112,19 @@ public:
         Poco::RunnableAdapter<OParent> rParentFuncAdapt(*this, &OParent::rParentConnectionHandler);
         Poco::Thread rParentConnectionHandlerThread;
         rParentConnectionHandlerThread.start(rParentFuncAdapt);
-        
+
+        /*Poco::RunnableAdapter<OParent> iWebsiteFuncAdapt(*this, &OParent::iWebsiteConnectionHandler);
+        Poco::Thread iWebsiteConnectionHandlerThread;
+        iWebsiteConnectionHandlerThread.start(iWebsiteFuncAdapt);*/
+
+        /*Poco::RunnableAdapter<OParent> oWebsiteFuncAdapt(*this, &OParent::oWebsiteConnectionHandler);
+        Poco::Thread oWebsiteConnectionHandlerThread;
+        oWebsiteConnectionHandlerThread.start(oWebsiteFuncAdapt);
+
         iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
-        iWebsiteConnectionThread.start(*iWebsiteConnection);
+        iWebsiteConnectionThread.start(*iWebsiteConnection);*/
 
-        if (DEBUG) { while (true) { sleep(10); iWebsiteConnection->sendData("Test data from OParent"); } }
-        
         while (true) {
             JSONUpdated.wait();
             if (flags.all()) {
@@ -138,7 +140,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogOP.txt", "a", stdout);
     try {OParent oParent(argv[1]);
         oParent.run();
     }

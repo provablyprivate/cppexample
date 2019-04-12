@@ -1,3 +1,5 @@
+// See jsonhandler.cpp for detailed description of variables and functions
+
 #ifndef SRC_JSONHANDLER_H_
 #define SRC_JSONHANDLER_H_
 

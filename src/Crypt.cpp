@@ -23,7 +23,7 @@ using namespace Poco::Crypto;
 
 class Crypt{
 
-private:
+ private:
     Cipher* cipher;
     RSADigestEngine* digestEngine;
     CipherFactory &factory = CipherFactory::defaultFactory();
@@ -34,38 +34,58 @@ private:
         return data.str();
     }
 
-public:
-    //Create an instance and a cipher in one
-    Crypt() {
-        RSAKey key(RSAKey(RSAKey::KL_2048, RSAKey::EXP_LARGE));
-        digestEngine = new RSADigestEngine(key);
-        cipher = factory.createCipher(key);
-    }
-
+ public:
+    /*! \brief Creates a Crypt class with both public and private key
+     *
+     * Used by an agent in order to decrypt and sign messages.
+     *
+     * \return Crypt privateCrypt
+     */
     Crypt(std::string publicKey, std::string privateKey) {
         RSAKey key(RSAKey(publicKey, privateKey));
         digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
     }
 
-    // Creates an instance for when only the public key is known
-    Crypt(std::string publicKey) {
+    /*! \brief Creates a Crypt when only the public key is known
+     *
+     * Used by an agent in order to encrypt messages to recipients.
+     *
+     * \return Crypt publicCrypt
+     */
+    explicit Crypt(std::string publicKey) {
         RSAKey key(publicKey);
         digestEngine = new RSADigestEngine(key);
         cipher = factory.createCipher(key);
-
     }
 
-    //Encryptes a string
-    std::string encrypt(std::string a){
+    /*! \brief Encrypts a string
+     *
+     * The encryption can only be done with the intended recipients PUBLIC key.
+     *
+     * \return std::string encrypted
+     */
+    std::string encrypt(std::string a) {
         return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
     }
-    //Decrypt a string
-    std::string decrypt(std::string a){
+
+    /*! \brief Decrypts a string
+     *
+     * The decryption can only be done with the intended recipients PRIVATE key.
+     *
+     * \return std::string decrypted
+     */
+    std::string decrypt(std::string a) {
         return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
     }
 
-    // Signs a string with private key. Returns a hex string
+    /*! \brief Sign the JSON object and returns the signature
+     *
+     * Note that the signature created gets converted to a hex string before
+     * it is returned!
+     *
+     * \return std::string signature
+     */
     std::string sign(Poco::JSON::Object::Ptr json) {
         digestEngine->reset();
         digestEngine->update(jsonToString(json));
@@ -73,14 +93,17 @@ public:
         return digestEngine->digestToHex(v);
     }
 
-    // Verify digest against data. Input must be a hex string
+    /*! \brief Verifies the JSON against the signature string
+     *
+     * Note that the input is and must be a hex string, which gets converted to a
+     * unsigned char vector before being verified against the JSON.
+     *
+     * \return bool verified
+     */
     bool verify(Poco::JSON::Object::Ptr json, std::string digest) {
         digestEngine->reset();
         digestEngine->update(jsonToString(json));
         std::vector<unsigned char> v = digestEngine->digestFromHex(digest);
         return digestEngine->verify(v);
     }
-
 };
-
-

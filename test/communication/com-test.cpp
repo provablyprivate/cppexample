@@ -168,7 +168,7 @@ int main() {
 
 
     string websiteSign = parentJson->get("PrevSign");
-    JSON::Object::Ptr websiteJson = parentJson->getObject("PrevJson");
+    JSON::Object::Ptr websiteJson = childJson->getObject("PrevJson")->getObject("PrevJson");
     printf("\n%s", "Verifying Website created JSON: ");
     verifySignature(webPubCrypt, websiteSign, websiteJson);
 

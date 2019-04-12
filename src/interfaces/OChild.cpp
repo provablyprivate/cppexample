@@ -98,8 +98,8 @@ private:
 public:
     OChild(std::string websiteIP) {
         rChildConnection = new Connection(O_INTERNAL_PORT);
-        iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
-        oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_1);
+        //iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
+        //oWebsiteConnection = new Connection(O_EXTERNAL_PORT_1);
 
         privateChildCrypt = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
         publicParentCrypt = new Crypt("./src/rsa-keys/parent.pub");
@@ -115,25 +115,26 @@ public:
         Poco::Thread rChildConnectionHandlerThread;
         rChildConnectionHandlerThread.start(rChildFuncAdapt);
 
-        iWebsiteConnection->waitForEstablishment();
-        Poco::Thread iWebsiteConnectionThread;
-        iWebsiteConnectionThread.start(*iWebsiteConnection);
-        
-        Poco::RunnableAdapter<OChild> oWebsiteFuncAdapt(*this, &OChild::oWebsiteConnectionHandler);
+        /*Poco::RunnableAdapter<OChild> iWebsiteFuncAdapt(*this, &OChild::iWebsiteConnectionHandler);
+        Poco::Thread iWebsiteConnectionHandlerThread;
+        iWebsiteConnectionHandlerThread.start(iWebsiteFuncAdapt);*/
+
+        /*Poco::RunnableAdapter<OChild> oWebsiteFuncAdapt(*this, &OChild::oWebsiteConnectionHandler);
         Poco::Thread oWebsiteConnectionHandlerThread;
         oWebsiteConnectionHandlerThread.start(oWebsiteFuncAdapt);
 
+        iWebsiteConnection->waitForEstablishment();
+        Poco::Thread iWebsiteConnectionThread;
+        iWebsiteConnectionThread.start(*iWebsiteConnection);*/
 
         while (true) {
             JSONUpdated.wait();
             if (flags.all()) {
                 std::string signature = privateChildCrypt->sign(childJSON->getObject());
                 std::string message = encodeHex(childJSON, signature);
-                std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
                 flags = 0b00;
             } else {
-                if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
                 continue;
             }
         }
@@ -141,7 +142,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogOC.txt", "a", stdout);
     try {OChild oChild(argv[1]);
         oChild.run();
     }
