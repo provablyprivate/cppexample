@@ -8,7 +8,7 @@ from mininet.cli import CLI
 from mininet.term import makeTerm, cleanUpScreens
 from time import sleep
 
-extendedArchitecture = True
+extendedArchitecture = False
 
 websiteIP = "100.000.000.001"
 websitePortForParent = 20000 # The port that Parent connects to and Website expects Parent to connect to
