@@ -2,6 +2,8 @@
 
 using namespace std;
 
+InterfaceHelper::InterfaceHelper() {}
+
 InterfaceHelper::InterfaceHelper(int flagSize) {
     flags.resize(flagSize);
 }
@@ -65,6 +67,7 @@ bool InterfaceHelper::all() {
     for (unsigned int i = 0; i < flags.size(); i++) {
        if (!flags.at(i)) return false;
     }
+
     return true;
 }
 
@@ -73,7 +76,12 @@ void InterfaceHelper::set(int position, bool value) {
     flags.at(position) = value;
 }
 
-/* \brief resets all values in falgs vector to false */
+/* \brief resets all values in flags vector to false
+ *
+ * The assign function of the vector function sets the given value
+ * to the given range. In this case we use it to set all bools to false,
+ * reseting the flags.
+ * */
 void InterfaceHelper::clear() {
     flags.assign(flags.size(), false);
 }

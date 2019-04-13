@@ -1,47 +1,38 @@
+#include <bitset>
+#include <stdlib.h>
 #include "./Constants.h"
+#include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
 #include "../Jsonhandler.cpp"
-#include "Poco/HexBinaryDecoder.h"
-#include "Poco/RegularExpression.h"
-#include "Poco/StreamCopier.h"
-#include <bitset>
-#include <stdlib.h>
 
 class OParent {
-
-private:
+ private:
     Connection *rParentConnection;
     Connection *iWebsiteConnection;
     Crypt * privateParentCrypt;
     Crypt * publicChildCrypt;
     Crypt * publicWebsiteCrypt;
     JSONHandler * parentJSON;
-    std::bitset<2> flags;
-    bool validSignature;
+    InterfaceHelper * helper;
     Poco::Event JSONUpdated = Poco::Event(true);
 
-    bool isJSON(std::string input) {
-        std::string separator = "-----BEGIN SIGNATURE-----";
-        return (input.find(separator) != std::string::npos);
-    }
-
-    std::vector<std::string> decodeHex(std::string input) {
-        std::string decoded;
-        std::istringstream istream(input);                    // Reads the incoming message to the istream
-        Poco::HexBinaryDecoder decoder(istream);              // Decodes the hex-message.
-        Poco::StreamCopier::copyToString(decoder, decoded);   // Appends the decoded message it to 'decoded' variable
-        std::vector<std::string> matches;
-
-        if (isJSON(decoded)) {
-            std::string REGEX = "([\\s\\S]*)\n-----BEGIN SIGNATURE-----\n([\\s\\S]*)"; // creates two groups, before and after "begin signature" field
-            Poco::RegularExpression re(REGEX);
-            re.split(decoded, matches);                  // Splits the string with the above given regexa
-        } else {
-            matches[1] = decoded;
+    //identical to OChild. only thing different is class json and crypt. generlize?
+    void relayData() {
+        while (true) {
+            JSONUpdated.wait();
+            if (helper->all()) {
+                std::string jsonHex = parentJSON->toHex();
+                std::string signatureHex = privateParentCrypt->sign(parentJSON->getObject());
+                std::string message = jsonHex + "." + signatureHex;
+                std::cout << "Sending to iWebsite: " << message << std::endl;
+                iWebsiteConnection->sendData(message);
+                helper->clear();
+            } else {
+                if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
+                continue;
+            }
         }
-
-        return matches;
     }
 
     void rParentConnectionHandler() {
@@ -57,48 +48,55 @@ private:
 
             if (DEBUG) { std::cout << "Sending it to IWebsite" << std::endl; iWebsiteConnection->sendData(s); }
 
-            /* !!!!!!!!!!!!!!!!!!!!!!
-             * Segfault in decodeHex()
-            std::vector<std::string> messages = decodeHex(s);       // Recieves a decoded and deconstructed message
+            //The following is different from OChild since incoming messages can be of two types
+            //But it essentially works like Owebsite and Rchild in one function
+            //Difference is that we don't verify signature here since IParent already does that
+            //If we do it anyway we can generlize function??
 
-            if (sizeof(messages[2]) > 0) {  // if it's a json. BAD???
-                JSONHandler * previousJSON = new JSONHandler(messages[1]); // creating JSON from the parsed string
-                std::string previousSignature = messages[2];               // creating signature from the parsed string
+            std::vector<std::string> messages = helper->splitString(s, '.');
 
-                validSignature = publicWebsiteCrypt->verify(previousJSON->getObject(), previousSignature);
-                if (not validSignature) continue;                       // Resets the while loop if invalid signature
+            if (messages.size() > 1) {
+                JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
+                std::string previousSignature = messages[1];
 
-                parentJSON->put("PrevJson", previousJSON->getObject());  // Get the object and puts it in the JSON
-                parentJSON->put("PrevSign", previousSignature);          // Puts the signature
-                flags |= 0b10; //update flag
+                // validSignature = publicWebsiteCrypt->verify(previousJSON->getObject(), previousSignature);
+                // if (!validSignature) continue;
+
+                JSONHandler * previous = new JSONHandler();
+                previous->put("Json", previousJSON->getObject());
+                previous->put("Signature", previousSignature);
+                parentJSON->put("Previous", previous->getObject());
+
+                helper->set(1,true);
                 JSONUpdated.set();
 
-            } else if (sizeof(messages[1]) > 0) {
-                std::string consent = messages[1];
+            } else if (messages.size() > 0) {
+                std::string consent = messages[1]; // Encrypted consent insttead of s, like Ochild
                 std::string encryptedData = privateParentCrypt->encrypt(consent);
 
                 parentJSON->put("Value", encryptedData);
-                flags |= 0b01; //update flag
+                helper->set(0,true);
                 JSONUpdated.set();
-            }*/
+            }
         }
     }
 
-public:
+ public:
+    //All of this is almost identical to Ochild
     OParent(std::string websiteIP) {
-        rParentConnection = new Connection(O_INTERNAL_PORT);
+        rParentConnection  = new Connection(O_INTERNAL_PORT);
         iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_2);
 
+        helper             = new InterfaceHelper(2);
+
         privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub","./src/rsa-keys/parent");
-        publicChildCrypt = new Crypt("./src/rsa-keys/child.pub");
+        publicChildCrypt   = new Crypt("./src/rsa-keys/child.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
-        parentJSON = new JSONHandler();
-        parentJSON->put("Type", "Consent");  // This might now follow type system!!!!
-        flags = 0b00;
+        parentJSON         = new JSONHandler();
+        parentJSON->put("Type", "Consent");  // This might not follow type system!!!!
     }
 
     void run() {
-
         Poco::RunnableAdapter<OParent> rParentFuncAdapt(*this, &OParent::rParentConnectionHandler);
         Poco::Thread rParentConnectionHandlerThread;
         rParentConnectionHandlerThread.start(rParentFuncAdapt);
@@ -109,17 +107,7 @@ public:
 
         if (DEBUG) { while (true) { sleep(10); iWebsiteConnection->sendData("Test data from OParent"); } }
 
-        while (true) {
-            JSONUpdated.wait();
-            if (flags.all()) {
-                std::string signature = privateParentCrypt->sign(parentJSON->getObject());
-                std::string message = parentJSON->toHex() + "." + signature;
-                iWebsiteConnection->sendData(message);
-                flags = 0b00;
-            } else {
-                continue;
-            }
-        }
+        relayData();
     }
 };
 

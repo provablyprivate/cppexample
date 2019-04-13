@@ -1,9 +1,9 @@
 #include "./Constants.h"
+#include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
 #include "../Jsonhandler.cpp"
 #include "Poco/HexBinaryDecoder.h"
-#include "Poco/RegularExpression.h"
 #include "Poco/StreamCopier.h"
 
 class IParent {
@@ -14,32 +14,9 @@ class IParent {
     Crypt * publicWebsiteCrypt;
     JSONHandler * websiteJSON;
     std::string recievedMessage;
+    InterfaceHelper * helper;
     bool validSignature;
     Poco::Event JSONVerified = Poco::Event(true);
-
-    std::vector<std::string> decodeHex(std::string input){
-        std::string decoded;
-        std::istringstream istream(input);                    // Reads the incoming message to the istream
-        Poco::HexBinaryDecoder decoder(istream);              // Decodes the hex-message.
-        Poco::StreamCopier::copyToString(decoder, decoded);   // Appends the decoded message it to 'decoded' variable
-
-        std::string REGEX = "([\\s\\S]*)\n-----BEGIN SIGNATURE-----\n([\\s\\S]*)";  // creates two groups, before and after "begin signature" field
-        Poco::RegularExpression re(REGEX);
-        std::vector<std::string> matches;
-        re.split(decoded, matches);                           // Splits the string with the above given regex
-
-        return matches;
-    }
-
-    std::string encodeHex(std::string string) {
-        std::ostringstream encoded;
-        Poco::HexBinaryEncoder encoder(encoded);
-        encoder.rdbuf()->setLineLength(0);
-        encoder << string;
-        encoder.close();
-
-        return encoded.str();
-    }
 
     void rParentConnectionHandler() {
         rParentConnection->waitForEstablishment();
@@ -48,13 +25,13 @@ class IParent {
 
         while (true) {
             JSONVerified.wait();
-            // std::string encrypted = websiteJSON->get("Value");
-            // std::string decrypted = privateParentCrypt->decrypt(encrypted);
-            //
-            // std::cout << "Decrypted message: " << decrypted << std::endl;
-            //
-            // std::string message = recievedMessage + "." + encodeHex(decrypted);
-            // rParentConnection->sendData(message);
+            std::string encrypted = websiteJSON->get("Value");
+            std::string decrypted = privateParentCrypt->decrypt(encrypted);
+
+            std::cout << "Decrypted message: " << decrypted << std::endl;
+
+            std::string message = recievedMessage + "." + helper->encodeHex(decrypted);
+            rParentConnection->sendData(message);
 
             if (DEBUG) rParentConnection->sendData("Some test data from IParent");
         }
@@ -62,10 +39,11 @@ class IParent {
 
  public:
     IParent(std::string websiteIP) {
-        rParentConnection = new Connection(I_INTERNAL_PORT);
+        rParentConnection  = new Connection(I_INTERNAL_PORT);
         oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_2);
         privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub", "./src/rsa-keys/parent");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
+        helper             = new InterfaceHelper();
     }
 
     void run() {
@@ -77,23 +55,22 @@ class IParent {
         Poco::Thread oWebsiteConnectionThread;
         oWebsiteConnectionThread.start(*oWebsiteConnection);
 
+        //Put in own function??
         std::string s;
         while (true) {
             oWebsiteConnection->waitForReceivedData();
             s = oWebsiteConnection->getData();
             std::cout << "Received from OWebsite: " << s << std::endl;
 
-            /* segfault in decodeHex()
-            std::vector<std::string> messages = decodeHex(s);       // Recieves a decoded and deconstructed message
-
-            JSONHandler * websiteJSON = new JSONHandler(messages[1]);  // creating JSON from the parsed string
-            std::string websiteSignature = messages[2];               // creating signature from the parsed string
+            std::vector<std::string> messages = helper->splitString(s, '.');
+            websiteJSON = new JSONHandler(messages[0]);
+            std::string websiteSignature = messages[1];
 
             validSignature = publicWebsiteCrypt->verify(websiteJSON->getObject(), websiteSignature);
-            if (!validSignature) continue;                       // Resets the while loop if invalid signature
+            if (!validSignature) continue;
 
+            //Different. we need this to be global. or????
             recievedMessage = s;
-            // flags |= 0b10; //update flag*/
             JSONVerified.set();
         }
     }
