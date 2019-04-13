@@ -4,7 +4,6 @@
 #include "Poco/RegularExpression.h"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/HexBinaryDecoder.h"
-#include "Poco/RegularExpression.h"
 #include "../../src/Crypt.cpp"
 #include "../../src/Jsonhandler.cpp"
 
@@ -36,15 +35,15 @@ int main() {
     cout << "\n\nCreating crypt classes for all the types\n" << endl;
     Crypt * webCrypt = new Crypt("./test/communication/rsa-keys/website.pub", "./test/communication/rsa-keys/website");
     cout << "webCrypt    created" << endl;
-    auto * webPubCrypt = new Crypt("./test/communication/rsa-keys/website.pub");
+    Crypt * webPubCrypt = new Crypt("./test/communication/rsa-keys/website.pub");
     cout << "webPubCrypt created" << endl;
-    auto * parCrypt = new Crypt("./test/communication/rsa-keys/parent.pub", "./test/communication/rsa-keys/parent");
+    Crypt * parCrypt = new Crypt("./test/communication/rsa-keys/parent.pub", "./test/communication/rsa-keys/parent");
     cout << "parCrypt    created" << endl;
-    auto * parPubCrypt = new Crypt("./test/communication/rsa-keys/parent.pub");
+    Crypt * parPubCrypt = new Crypt("./test/communication/rsa-keys/parent.pub");
     cout << "parPubCrypt created" << endl;
-    auto * chiCrypt = new Crypt("./test/communication/rsa-keys/child.pub", "./test/communication/rsa-keys/child");
+    Crypt * chiCrypt = new Crypt("./test/communication/rsa-keys/child.pub", "./test/communication/rsa-keys/child");
     cout << "chiCrypt    created" << endl;
-    auto * chiPubCrypt = new Crypt("./test/communication/rsa-keys/child.pub");
+    Crypt * chiPubCrypt = new Crypt("./test/communication/rsa-keys/child.pub");
     cout << "chiPubCrypt created" << endl;
     cout << "\nAll classes created" << endl;
 

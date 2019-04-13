@@ -1,13 +1,32 @@
-#define SALT "hackerman"
-#define DIGEST "sha1"
-#define METHOD "AES-256-CBC"
-#define ITERATIONS 100
+#ifndef SRC_CRYPT_H_
+#define SRC_CRYPT_H_
 #include "Poco/Crypto/Cipher.h"
-Poco::Crypto::Cipher* createKey(std::string password, std::string salt, std::string digest, std::string method);
-Poco::Crypto::Cipher* createKey(std::string password);
+#include "Poco/Crypto/CipherFactory.h"
+#include "Poco/Crypto/CipherKey.h"
+#include "Poco/Crypto/RSAKey.h"
+#include "Poco/Crypto/RSADigestEngine.h"
+#include "Poco/Crypto/DigestEngine.h"
+#include "Poco/JSON/Object.h"
 
-std::string decrypt(std::string a, Poco::Crypto::Cipher* cipher);
-std::string decrypt(std::string a);
+using namespace Poco::Crypto;
 
-std::string encrypt(std::string a, Poco::Crypto::Cipher* cipher);
-std::string encrypt(std::string a);
+class Crypt {
+ private:
+    Cipher* cipher;
+    RSADigestEngine* digestEngine;
+    CipherFactory &factory = CipherFactory::defaultFactory();
+
+    std::string jsonToString(Poco::JSON::Object::Ptr json);
+
+ public:
+    Crypt(std::string publicKey, std::string privateKey);
+    explicit Crypt(std::string publicKey);
+    ~Crypt();
+
+    std::string encrypt(std::string a);
+    std::string decrypt(std::string a);
+    std::string sign(Poco::JSON::Object::Ptr json);
+    bool verify(Poco::JSON::Object::Ptr json, std::string digest);
+};
+
+#endif /* SRC_CRYPT_H_ */

@@ -13,14 +13,11 @@
  * }
  */
 
-#include <bitset>
 #include "./Constants.h"
+#include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
 #include "../Jsonhandler.cpp"
-#include "Poco/HexBinaryDecoder.h"
-#include "Poco/RegularExpression.h"
-#include "Poco/StreamCopier.h"
 
 class OChild {
  private:
@@ -31,41 +28,9 @@ class OChild {
     Crypt * publicParentCrypt;
     Crypt * publicWebsiteCrypt;
     JSONHandler * childJSON;
-    std::bitset<2> flags;
+    InterfaceHelper * helper;
     bool validSignature;
     Poco::Event JSONUpdated = Poco::Event(true);
-
-    /*! \brief Decodes a hex string.
-     *
-     * Decodes a hex string and returns the result.
-     *
-     * \return std::string decoded
-     */
-    std::string decodeHex(std::string input) {
-        std::string decoded;
-        std::istringstream istream(input);
-        Poco::HexBinaryDecoder decoder(istream);
-        Poco::StreamCopier::copyToString(decoder, decoded);
-
-        return decoded;
-    }
-
-    /*! \brief Splits string given a delimiter
-     *
-     * Used to split the incoming hex messages separated by a dot character.
-     *
-     * \return std::vector<std::string> matches
-     */
-    std::vector<std::string> splitString(std::string input, char delimeter) {
-        std::istringstream ss(input);
-        std::string match;
-        std::vector<std::string> matches;
-        while (std::getline(ss, match, delimeter)) {
-           matches.push_back(match);
-        }
-
-        return matches;
-    }
 
     /*! \brief Relays the data to the recipient
      *
@@ -79,13 +44,13 @@ class OChild {
     void relayData() {
         while (true) {
             JSONUpdated.wait();
-            if (flags.all()) {
+            if (helper->all()) {
                 std::string jsonHex = childJSON->toHex();
                 std::string signatureHex = privateChildCrypt->sign(childJSON->getObject());
                 std::string message = jsonHex + "." + signatureHex;
                 std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
-                flags = 0b00;
+                helper->clear();
             } else {
                 if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
                 continue;
@@ -120,8 +85,8 @@ class OChild {
 
             // It is known that the recieved message will be of format JsonHEX.SignatureHEX
             // Hence we can 'hard code' which hex needs to be decoded or not.
-            std::vector<std::string> messages = splitString(s, '.');
-            JSONHandler * previousJSON = new JSONHandler(decodeHex(messages[0]));
+            std::vector<std::string> messages = helper->splitString(s, '.');
+            JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string previousSignature = messages[1];
 
             validSignature = publicParentCrypt->verify(previousJSON->getObject(), previousSignature);
@@ -132,7 +97,7 @@ class OChild {
             previous->put("Signature", previousSignature);
             childJSON->put("Previous", previous->getObject());
 
-            flags |= 0b10;
+            helper->set(1, true);
             JSONUpdated.set();
         }
     }
@@ -162,7 +127,7 @@ class OChild {
             string encryptedData = publicWebsiteCrypt->encrypt(s);
             childJSON->put("Value", encryptedData);
 
-            flags |= 0b01;
+            helper->set(0, true);
             JSONUpdated.set();
         }
     }
@@ -173,6 +138,8 @@ class OChild {
         iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
         oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_1);
 
+        helper = new InterfaceHelper(2);
+
         privateChildCrypt  = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
         publicParentCrypt  = new Crypt("./src/rsa-keys/parent.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
@@ -180,7 +147,6 @@ class OChild {
         childJSON          = new JSONHandler();
         childJSON->put("Type", "PDATA");  // This might not follow type system! Unclear!!
 
-        flags = 0b00;
     }
 
     /*! \brief Main function run by the class

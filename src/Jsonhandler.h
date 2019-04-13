@@ -16,6 +16,7 @@ class JSONHandler {
 
  public:
     JSONHandler();
+    ~JSONHandler();
     explicit JSONHandler(string input);
     explicit JSONHandler(Object::Ptr input);
 
