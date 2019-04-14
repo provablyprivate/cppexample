@@ -15,10 +15,12 @@ private:
     InterfaceHelper * helper;
 
     void iParentConnectionHandler() {
-        iParentConnection->waitForEstablishment();
         Poco::Thread iParentConnectionThread;
         iParentConnectionThread.start(*iParentConnection);
 
+        iParentConnection->waitForEstablishment();
+        oParentConnection->waitForEstablishment();
+        parentConnection->waitForEstablishment();
         std::string s;
         while (true) {
             iParentConnection->waitForReceivedData();
@@ -52,14 +54,14 @@ public:
         Poco::Thread iParentConnectionHandlerThread;
         iParentConnectionHandlerThread.start(iParentFuncAdapt);
 
-        oParentConnection->waitForEstablishment();
         Poco::Thread oParentConnectionThread;
         oParentConnectionThread.start(*oParentConnection);
 
-        parentConnection->waitForEstablishment();
         Poco::Thread parentConnectionThread;
         parentConnectionThread.start(*parentConnection);
 
+        oParentConnection->waitForEstablishment();
+        parentConnection->waitForEstablishment();
         std::string s;
         while (true) {
             parentConnection->waitForReceivedData();

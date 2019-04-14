@@ -42,6 +42,7 @@ class OChild {
      *  Once the message is sent, the global 'flags' variable is reset.
      */
     void relayData() {
+        iWebsiteConnection->waitForEstablishment();
         while (true) {
             JSONUpdated.wait();
             if (helper->all()) {
@@ -73,9 +74,9 @@ class OChild {
      * proper execution. Finally the function will wake relayData() using JSONUpdated.set().
      */
     void oWebsiteConnectionHandler() {
-        oWebsiteConnection->waitForEstablishment();
         Poco::Thread oWebsiteConnectionThread;
         oWebsiteConnectionThread.start(*oWebsiteConnection);
+        oWebsiteConnection->waitForEstablishment();
 
         std::string s;
         while (true) {
@@ -114,9 +115,9 @@ class OChild {
      * even though no consent is given.
      */
     void rChildConnectionHandler() {
-        rChildConnection->waitForEstablishment();
         Poco::Thread rChildConnectionThread;
         rChildConnectionThread.start(*rChildConnection);
+        rChildConnection->waitForEstablishment();
 
         std::string s;
         while (true) {
@@ -158,7 +159,6 @@ class OChild {
         Poco::Thread rChildConnectionHandlerThread;
         rChildConnectionHandlerThread.start(rChildFuncAdapt);
 
-        iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);
 

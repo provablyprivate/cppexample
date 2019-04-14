@@ -16,17 +16,18 @@ public:
     }
 
     void run() {
-        rWebsiteConnection->waitForEstablishment();
         Poco::Thread rWebsiteConnectionThread;
         rWebsiteConnectionThread.start(*rWebsiteConnection);
 
-        oChildConnection->waitForEstablishment();
         Poco::Thread oChildConnectionThread;
         oChildConnectionThread.start(*oChildConnection);
 
-        iParentConnection->waitForEstablishment();
         Poco::Thread iParentConnectionThread;
         iParentConnectionThread.start(*iParentConnection);
+
+        rWebsiteConnection->waitForEstablishment();
+        oChildConnection->waitForEstablishment();
+        iParentConnection->waitForEstablishment();
 
         std::string s;
         while (true) {

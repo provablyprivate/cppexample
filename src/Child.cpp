@@ -23,15 +23,15 @@ public:
 
     void run() {
         createPrivateData();
-        websiteConnection->waitForEstablishment();
         Poco::Thread connectionThread;
         connectionThread.start(*websiteConnection);
 
         srand(time(NULL) + 789);
+        websiteConnection->waitForEstablishment();
         while (true) {
             sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
-            std::cout << "Sending to Website: " << privateData << std::endl;
-            websiteConnection->sendData(privateData);
+            //std::cout << "Sending to Website: " << privateData << std::endl;
+            //websiteConnection->sendData(privateData);
         }
 
     }

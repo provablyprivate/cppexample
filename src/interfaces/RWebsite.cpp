@@ -10,10 +10,14 @@ private:
     Connection *websiteChildConnection;
 
     void iWebsiteConnectionHandler() {
-        iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);
-
+        
+        iWebsiteConnection->waitForEstablishment();
+        oWebsiteConnection->waitForEstablishment();
+        websiteChildConnection->waitForEstablishment();
+        websiteParentConnection->waitForEstablishment();
+        
         std::string s;
         while (true) {
             iWebsiteConnection->waitForReceivedData();
@@ -34,7 +38,6 @@ public:
         iWebsiteConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
         oWebsiteConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
         websiteParentConnection = new Connection(LOCALHOST, parentPort);
-        sleep(1);
         websiteChildConnection = new Connection(LOCALHOST, childPort);
     }
 
@@ -43,19 +46,17 @@ public:
         Poco::Thread iWebsiteConnectionHandlerThread;
         iWebsiteConnectionHandlerThread.start(iWebsiteFuncAdapt);
 
-        oWebsiteConnection->waitForEstablishment();
         Poco::Thread oWebsiteConnectionThread;
         oWebsiteConnectionThread.start(*oWebsiteConnection);
 
-
-        websiteParentConnection->waitForEstablishment();
         Poco::Thread websiteParentConnectionThread;
         websiteParentConnectionThread.start(*websiteParentConnection);
 
-        websiteChildConnection->waitForEstablishment();
         Poco::Thread websiteChildConnectionThread;
         websiteChildConnectionThread.start(*websiteChildConnection);
 
+        oWebsiteConnection->waitForEstablishment();
+        websiteParentConnection->waitForEstablishment();
         // Main thread continues waiting for data from Website
         std::string s;
         while (true) { // Get policy from Website, forward to Parent via OWebsite

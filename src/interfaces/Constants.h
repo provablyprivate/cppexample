@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 
-bool DEBUG = true;
+bool DEBUG = false;
 
 const std::string LOCALHOST = "127.0.0.1";
 

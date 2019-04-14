@@ -8,7 +8,7 @@ from mininet.cli import CLI
 from mininet.term import makeTerm, cleanUpScreens
 from time import sleep
 
-extendedArchitecture = False
+extendedArchitecture = True
 
 websiteIP = "100.000.000.001"
 websitePortForParent = 20000 # The port that Parent connects to and Website expects Parent to connect to
@@ -50,24 +50,24 @@ def run():
 
     # Run Website
     makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {}".format(websitePortForParent, websitePortForChild))
-    sleep(2)
     
     if extendedArchitecture: # Run all interface applications
         makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./IWebsite")
         makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./OWebsite")
+        sleep(1)
         makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./RWebsite {} {}".format(websitePortForParent, websitePortForChild))
-        sleep(2)
         
         makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./OChild {}".format(websiteIP))
+        sleep(1)
         makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./RChild {}".format(websitePortForChild))
-        sleep(2)
         
         makeTerm(node=net.getNodeByName("parent"), title="IParent", cmd="./IParent {}".format(websiteIP))
         makeTerm(node=net.getNodeByName("parent"), title="OParent", cmd="./OParent {}".format(websiteIP))
+        sleep(1)
         makeTerm(node=net.getNodeByName("parent"), title="RParent", cmd="./RParent {}".format(websitePortForParent))
-        sleep(2)
 
     # Run Parent, Child, and Third Party
+    sleep(1)
     makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./Parent {} {}".format(websiteIPUsedByParent, websitePortForParent))
     makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./Child {} {}".format(websiteIPUsedByChild, websitePortForChild))
     makeTerm(node=net.getNodeByName(switchName), title="Third Party", cmd="./ThirdParty {} {} {} {}".format(ifaceID, websiteIP, parentIP, childIP))

@@ -19,9 +19,9 @@ class IParent {
     Poco::Event JSONVerified = Poco::Event(true);
 
     void rParentConnectionHandler() {
-        rParentConnection->waitForEstablishment();
         Poco::Thread rParentConnectionThread;
         rParentConnectionThread.start(*rParentConnection);
+        rParentConnection->waitForEstablishment();
 
         while (true) {
             JSONVerified.wait();
@@ -33,7 +33,6 @@ class IParent {
             std::string message = recievedMessage + "." + helper->encodeHex(decrypted);
             rParentConnection->sendData(message);
 
-            if (DEBUG) rParentConnection->sendData("Some test data from IParent");
         }
     }
 
@@ -51,9 +50,10 @@ class IParent {
         Poco::Thread rParentConnectionHandlerThread;
         rParentConnectionHandlerThread.start(rParentFuncAdapt);
 
-        oWebsiteConnection->waitForEstablishment();
         Poco::Thread oWebsiteConnectionThread;
         oWebsiteConnectionThread.start(*oWebsiteConnection);
+        oWebsiteConnection->waitForEstablishment();
+
 
         //Put in own function??
         std::string s;

@@ -21,6 +21,7 @@ private:
     }
 
     void readIncomingChildData() {
+        childConnection->waitForEstablishment();
         while (true) {
             childConnection->waitForReceivedData();
             receivedChildData = childConnection->getData();
@@ -29,6 +30,7 @@ private:
     }
 
     void readIncomingParentData() {
+        parentConnection->waitForEstablishment();
         while (true) {
             parentConnection->waitForReceivedData();
             receivedParentData = parentConnection->getData();
@@ -46,13 +48,11 @@ public:
     void run() {
         createPolicy();
 
-        parentConnection->waitForEstablishment();
         parentConnectionThread.start(*parentConnection);
         Poco::RunnableAdapter<Website> readerFuncAdaptParent(*this, &Website::readIncomingParentData);
         Poco::Thread parentReaderThread;
         parentReaderThread.start(readerFuncAdaptParent);
 
-        childConnection->waitForEstablishment();
         childConnectionThread.start(*childConnection);
         Poco::RunnableAdapter<Website> readerFuncAdaptChild(*this, &Website::readIncomingChildData);
         Poco::Thread childReaderThread;
@@ -60,10 +60,11 @@ public:
 
 
         srand(time(NULL) + 123);
+        parentConnection->waitForEstablishment();
         while (true) {
             sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
-            std::cout << "Sending to Parent: " << policy << std::endl;
-            parentConnection->sendData(policy);
+            //std::cout << "Sending to Parent: " << policy << std::endl;
+            //parentConnection->sendData(policy);
         }
 
     }

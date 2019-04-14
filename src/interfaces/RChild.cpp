@@ -9,6 +9,9 @@ private:
     Connection *oChildConnection;
 
     void relayData() {
+        oChildConnection->waitForEstablishment();
+        childConnection->waitForEstablishment();
+        
         std::string s;
         while (true) {
             childConnection->waitForReceivedData();
@@ -26,12 +29,9 @@ public:
     }
 
     void run() {
-
-        oChildConnection->waitForEstablishment();
         Poco::Thread oChildConnectionThread;
         oChildConnectionThread.start(*oChildConnection);
 
-        childConnection->waitForEstablishment();
         Poco::Thread childConnectionThread;
         childConnectionThread.start(*childConnection);
 

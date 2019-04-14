@@ -16,6 +16,7 @@ private:
     }
 
     void readIncomingData() {
+        websiteConnection->waitForEstablishment();
         while (true) {
             websiteConnection->waitForReceivedData();
             receivedData = websiteConnection->getData();
@@ -31,7 +32,6 @@ public:
 
     void run() {
         createConsent();
-        websiteConnection->waitForEstablishment();
         Poco::Thread connectionThread;
         connectionThread.start(*websiteConnection);
 
@@ -39,10 +39,11 @@ public:
         readerThread.start(readerFuncAdapt);
 
         srand(time(NULL) + 456);
+        websiteConnection->waitForEstablishment();
         while (true) {
             sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
-            std::cout << "Sending to Website: " << consent << std::endl;
-            websiteConnection->sendData(consent);
+            //std::cout << "Sending to Website: " << consent << std::endl;
+            //websiteConnection->sendData(consent);
         }
 
     }

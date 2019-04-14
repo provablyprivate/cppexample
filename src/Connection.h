@@ -10,17 +10,21 @@
 
 /*
  * Class that models connections to remote hosts.
- * If instantiated with socket, it waits for incoming connections.
- * If instantiated with ip and socket, it attempts to connect to the socket at the ip.
+ * If instantiated with socket, it will wait for incoming connections.
+ * If instantiated with ip and socket, it will attempt to connect to the socket at the ip.
  */
 class Connection: public Poco::Runnable {
 
 private:
+    std::string ip; // The address of the host to connect to 
+    int port; // The port at which to listen or attempt to connect to
+    bool server; // True if this instance is to accept a connection
+    
     std::string arrivedData; // Data received from the socket that is to be passed to the client
     std::string unsentData; // Data from the user that is to be sent through the socket
     
     // Events used internally
-    Poco::Event connectionEstablished = Poco::Event(true);
+    Poco::Event connectionEstablished = Poco::Event(false);
     Poco::Event dataReceived = Poco::Event(true);
     Poco::Event dataToSend = Poco::Event(true);
     Poco::Event connectionClosed = Poco::Event(false);
@@ -36,11 +40,18 @@ private:
     // Some special string that, when sent or received, terminates the connection
     std::string connectionTerminator = "bye";
 
-    // Creates the socket used to pass and receive messages, and signals the user that the connection is up
+    // Sets up the connection to the other host
     void setUp() {
+        if (server) { // Wait for connection
+            listener = Poco::Net::ServerSocket(port, 64);
+            streamSocket = listener.acceptConnection();
+        }
+        else { // Attempt to connect
+            address = Poco::Net::SocketAddress(ip, port);
+            streamSocket = Poco::Net::StreamSocket(address);
+        }
+    
         socketStream = new Poco::Net::SocketStream(streamSocket);
-        //std::cout << "Connection established" << std::endl;
-        connectionEstablished.set();
     }
     
     // Does a blocking read on the socket. Upon success, transfers data to connection interface and notifies user
@@ -75,17 +86,16 @@ public:
     }
     
     // Called if this instance acts as server
-    Connection(int port) {
-        listener = Poco::Net::ServerSocket(port, 64);
-        streamSocket = listener.acceptConnection();
-        setUp();
+    Connection(int portToAcceptAt) {
+        server = true;
+        port = portToAcceptAt;
     }
     
     // Called if this instance acts as client
-    Connection(std::string ip, int port) {
-        address = Poco::Net::SocketAddress(ip, port);
-        streamSocket = Poco::Net::StreamSocket(address);
-        setUp();
+    Connection(std::string ipToConnectTo, int portToConnectTo) {
+        server = false;
+        ip = ipToConnectTo;
+        port = portToConnectTo;
     }
     
     // Users call this to block waiting for the connection to be established
@@ -112,14 +122,23 @@ public:
         connectionClosed.set();
     }
     
-    // Called when a thread is started with this Connection object (after connectionEstablished has been signalled)
-    // Creates two threads that, respectively, reads from and writes to the socket
+    // Called when a thread is started with this Connection object.
+    // Sets up the connection and signals the user that the connection is up.
+    // Then creates two threads that, respectively, reads from and writes to the socket.
     virtual void run() {
+        setUp();
         Poco::RunnableAdapter<Connection> readerFuncAdapt(*this, &Connection::readSocket);
         Poco::RunnableAdapter<Connection> writerFuncAdapt(*this, &Connection::writeSocket);
         readerThread.start(readerFuncAdapt); 
         writerThread.start(writerFuncAdapt);
         
+        connectionEstablished.set();
+        
+        if (server)
+            std::cout << "Connection accepted at port " << port << std::endl;
+        else
+            std::cout << "Connection to " << ip << ":" << port << " established" << std::endl;
+            
         // Wait for either of the threads or the user to close the connection
         connectionClosed.wait();
     }

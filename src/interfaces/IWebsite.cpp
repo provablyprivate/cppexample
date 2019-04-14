@@ -9,10 +9,12 @@ private:
     Connection *oParentConnection;
 
     void oChildConnectionHandler() {
-        oChildConnection->waitForEstablishment();
         Poco::Thread oChildConnectionThread;
         oChildConnectionThread.start(*oChildConnection);
 
+        rWebsiteConnection->waitForEstablishment();
+        oChildConnection->waitForEstablishment();
+        
         std::string s; // pdata goes here
         while (true) {
             oChildConnection->waitForReceivedData();
@@ -30,7 +32,6 @@ public:
     }
 
     void run() {
-        rWebsiteConnection->waitForEstablishment();
         Poco::Thread rWebsiteConnectionThread;
         rWebsiteConnectionThread.start(*rWebsiteConnection);
 
@@ -38,10 +39,12 @@ public:
         Poco::Thread oChildConnectionHandlerThread;
         oChildConnectionHandlerThread.start(oChildFuncAdapt);
 
-        oParentConnection->waitForEstablishment();
         Poco::Thread oParentConnectionThread;
         oParentConnectionThread.start(*oParentConnection);
 
+        rWebsiteConnection->waitForEstablishment();
+        oParentConnection->waitForEstablishment();
+        
         std::string s; // consent goes here
         while (true) {
             oParentConnection->waitForReceivedData();

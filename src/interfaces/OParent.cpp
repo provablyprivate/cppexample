@@ -19,6 +19,8 @@ class OParent {
 
     //identical to OChild. only thing different is class json and crypt. generlize?
     void relayData() {
+        iWebsiteConnection->waitForEstablishment();
+        if (DEBUG) iWebsiteConnection->sendData("Test data from OParent");
         while (true) {
             JSONUpdated.wait();
             if (helper->all()) {
@@ -36,17 +38,15 @@ class OParent {
     }
 
     void rParentConnectionHandler() {
-        rParentConnection->waitForEstablishment();
         Poco::Thread rParentConnectionThread;
         rParentConnectionThread.start(*rParentConnection);
-
+        rParentConnection->waitForEstablishment();
+        
         std::string s;
         while (true) {
             rParentConnection->waitForReceivedData();
             s = rParentConnection->getData();
             std::cout << "Received from RParent: " << s << std::endl;
-
-            if (DEBUG) { std::cout << "Sending it to IWebsite" << std::endl; iWebsiteConnection->sendData(s); }
 
             //The following is different from OChild since incoming messages can be of two types
             //But it essentially works like Owebsite and Rchild in one function
@@ -101,11 +101,8 @@ class OParent {
         Poco::Thread rParentConnectionHandlerThread;
         rParentConnectionHandlerThread.start(rParentFuncAdapt);
 
-        iWebsiteConnection->waitForEstablishment();
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);
-
-        if (DEBUG) { while (true) { sleep(10); iWebsiteConnection->sendData("Test data from OParent"); } }
 
         relayData();
     }
