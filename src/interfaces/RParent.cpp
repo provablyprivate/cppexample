@@ -1,7 +1,6 @@
 #include "./Constants.h"
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
-#include <stdlib.h>
 #include <sstream>
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/HexBinaryEncoder.h"
@@ -43,7 +42,7 @@ private:
 
 public:
     RParent(int webSitePortUsedByParent) {
-        iParentConnection = new Connection(LOCALHOST, I_INTERNAL_PORT); sleep(1);
+        iParentConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
         oParentConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
         parentConnection  = new Connection(webSitePortUsedByParent);
         helper            = new InterfaceHelper();

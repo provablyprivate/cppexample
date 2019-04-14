@@ -1,5 +1,4 @@
 #include <bitset>
-#include <stdlib.h>
 #include "./Constants.h"
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
