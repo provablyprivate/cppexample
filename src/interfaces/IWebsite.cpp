@@ -13,10 +13,14 @@ private:
     
     InterfaceHelper *helper;
     JSONHandler *parentJSON;
+    JSONHandler *childJSON;
     
+    Crypt *privateWebsiteCrypt;
     Crypt *publicParentCrypt;
+    Crypt *publicChildCrypt;
     
     bool validParentSignature;
+    bool validChildSignature;
 
     void oChildConnectionHandler() {
         Poco::Thread oChildConnectionThread;
@@ -27,10 +31,22 @@ private:
         
         std::string s; // pdata goes here
         while (true) {
+            oChildConnection->waitForReceivedData();
+            std:vector<std::string> messages = helper->splitString(s, '.');
             
+            if (messages.size() != 2)
+                continue;
             
-            //decrypt etc, pass to RWebsite
+            childJSON = new JSONHandler(helper->decodeHex(messages[0]));
+            std::string childSignature = helper->decodeHex(messages[1]);
+            validChildSignature = publicChildCrypt->verify(childJSON->getObject(), childSignature);
             
+            if (!validChildSignature)
+                continue;
+            
+            // Decrypt pdata, pass to Website (via RWebsite)
+            std::string privateData = privateWebsiteCrypt->decrypt(childJSON->get("Value"));
+            rWebsiteConnection->sendData(privateData);
             
         }
     }
@@ -41,7 +57,9 @@ public:
         oChildConnection = new Connection(I_EXTERNAL_PORT_1);
         oParentConnection = new Connection(I_EXTERNAL_PORT_2);
         helper = new InterfaceHelper();
+        privateWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub", "./src/rsa-keys/website");
         publicParentCrypt = new Crypt("./src/rsa-keys/parent.pub");
+        publicChildCrypt = new Crypt("./src/rsa-keys/child.pub");
 
     }
 
@@ -70,7 +88,7 @@ public:
                 continue;
             
             parentJSON = new JSONHandler(helper->decodeHex(messages[0]));
-            std::string parentSignature = messages[1];
+            std::string parentSignature = helper->decodeHex(messages[1]);
             
             validParentSignature = publicParentCrypt->verify(parentJSON->getObject(), parentSignature);
             
