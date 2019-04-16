@@ -1,5 +1,8 @@
 #include "./Constants.h"
 #include "../Connection.h"
+#include "./InterfaceHelper.cpp"
+#include "../Jsonhandler.cpp"
+#include "../Crypt.cpp"
 
 
 class IWebsite {
