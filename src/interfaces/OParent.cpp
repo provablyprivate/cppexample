@@ -40,7 +40,7 @@ class OParent {
         Poco::Thread rParentConnectionThread;
         rParentConnectionThread.start(*rParentConnection);
         rParentConnection->waitForEstablishment();
-        
+
         std::string s;
         while (true) {
             rParentConnection->waitForReceivedData();
@@ -57,9 +57,6 @@ class OParent {
             if (messages.size() > 1) {
                 JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
                 std::string previousSignature = messages[1];
-
-                // validSignature = publicWebsiteCrypt->verify(previousJSON->getObject(), previousSignature);
-                // if (!validSignature) continue;
 
                 JSONHandler * previous = new JSONHandler();
                 previous->put("Json", previousJSON->getObject());

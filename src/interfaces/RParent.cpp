@@ -1,13 +1,9 @@
 #include "./Constants.h"
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
-#include <sstream>
-#include "Poco/HexBinaryDecoder.h"
-#include "Poco/HexBinaryEncoder.h"
-#include "Poco/StreamCopier.h"
 
 class RParent {
-private:
+ private:
     Connection *iParentConnection;
     Connection *oParentConnection;
     Connection *parentConnection;
@@ -40,7 +36,7 @@ private:
         }
     }
 
-public:
+ public:
     RParent(int webSitePortUsedByParent) {
         iParentConnection = new Connection(LOCALHOST, I_INTERNAL_PORT);
         oParentConnection = new Connection(LOCALHOST, O_INTERNAL_PORT);
@@ -71,7 +67,6 @@ public:
             if (DEBUG) { std::cout << "Sending it to OParent" << std::endl; oParentConnection->sendData(s); }
         }
     }
-
 };
 
 int main(int argc, char **argv) {
