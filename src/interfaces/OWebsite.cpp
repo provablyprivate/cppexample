@@ -17,9 +17,9 @@ class OWebsite {
         oChildConnection    = new Connection(O_EXTERNAL_PORT_1);
         iParentConnection   = new Connection(O_EXTERNAL_PORT_2);
         helper              = new InterfaceHelper();
-        privateWebsiteCrypt = new Crypt("/src/rsa-keys/website.pub", "./src/rsa-keys/website");
-        publicChildCrypt    = new Crypt("./src/rsa-keys(child.pub");
-        publicParentCrypt   = new Crypt("./src/rsa-keys(parent.pub");
+        privateWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub", "./src/rsa-keys/website");
+        publicChildCrypt    = new Crypt("./src/rsa-keys/child.pub");
+        publicParentCrypt   = new Crypt("./src/rsa-keys/parent.pub");
         websiteJSON         = new JSONHandler();
 
         websiteJSON->put("Type", "Consent");
