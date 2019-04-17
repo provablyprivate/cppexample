@@ -52,7 +52,7 @@ class OWebsite {
 
             if (messages.size() > 1) {
                 std::cout << "Forwarding to iParent" << std::endl;
-                iParentConnection->sendData(s);
+                oChildConnection->sendData(s);
 
             } else if (messages.size() > 0) {
                 std::string policy = messages[0];
