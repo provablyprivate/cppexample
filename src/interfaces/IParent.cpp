@@ -67,12 +67,17 @@ class IParent {
             std::cout << "Received from OWebsite: " << incoming << std::endl;
 
             std::vector<std::string> messages = helper->splitString(incoming, '.');
-            websiteJSON = new JSONHandler(messages[0]);
+            
+            if (messages.size() != 2)
+                continue;
+            
+            websiteJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string websiteSignature = messages[1];
-
             validSignature = publicWebsiteCrypt->verify(websiteJSON->getObject(), websiteSignature);
-            if (!validSignature) continue;
-
+            
+            if (!validSignature)
+                continue;
+            
             recievedMessage = incoming;
             JSONVerified.set();
         }
@@ -80,7 +85,7 @@ class IParent {
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogIP.txt", "a", stdout);
+    freopen("./errorlogIP.txt", "a", stdout);
     try {IParent iParent(argv[1]);
         iParent.run();
     }
