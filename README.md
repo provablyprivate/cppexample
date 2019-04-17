@@ -23,7 +23,7 @@ make
 ### Arch Linux installation
 * `sudo pacman -S core/bison`
 * `sudo pacman -S core/flex`
-* `yay -S aur/minninet-git`
+* `yay -S aur/mininet-git`
 * `sudo pacman -S community/openvswitch`
 * `sudo pacman -S extra/xterm`
 * `sudo pacman -S community/tcpflow`
