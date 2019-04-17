@@ -8,7 +8,7 @@ from mininet.cli import CLI
 from mininet.term import makeTerm, cleanUpScreens
 from time import sleep
 
-extendedArchitecture = True
+extendedArchitecture = False
 
 websiteIP = "100.000.000.001"
 websitePortForParent = 20000 # The port that Parent connects to and Website expects Parent to connect to
@@ -19,6 +19,9 @@ childIP = "100.000.000.003"
 # The address used by Parent and Child when connecting to Website
 websiteIPUsedByParent = parentIP if extendedArchitecture else websiteIP
 websiteIPUsedByChild = childIP if extendedArchitecture else websiteIP
+
+# Toggles whether Child, Website and Parent send their data automatically (after random delays), or if they send when told to (when Enter is pressed on their xterms)
+autoSend = False
 
 switchName = "thirdParty"
 
@@ -49,7 +52,7 @@ def run():
     ifaceID = net.getNodeByName(switchName).intfNames()[1] # The network interface on which the third party will run a sniffer
 
     # Run Website
-    makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {}".format(websitePortForParent, websitePortForChild))
+    makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {} {}".format(websitePortForParent, websitePortForChild, str(autoSend)))
     
     if extendedArchitecture: # Run all interface applications
         makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./IWebsite")
@@ -68,8 +71,8 @@ def run():
 
     # Run Parent, Child, and Third Party
     sleep(1)
-    makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./Parent {} {}".format(websiteIPUsedByParent, websitePortForParent))
-    makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./Child {} {}".format(websiteIPUsedByChild, websitePortForChild))
+    makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./Parent {} {} {}".format(websiteIPUsedByParent, websitePortForParent, str(autoSend)))
+    makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./Child {} {} {}".format(websiteIPUsedByChild, websitePortForChild, str(autoSend)))
     makeTerm(node=net.getNodeByName(switchName), title="Third Party", cmd="./ThirdParty {} {} {} {}".format(ifaceID, websiteIP, parentIP, childIP))
 
 

@@ -16,6 +16,8 @@ class Website {
     std::string receivedParentData;
     std::string receivedChildData;
 
+    bool automatic;
+
     void createPolicy() {
         policy = "policy";
     }
@@ -39,9 +41,10 @@ class Website {
     }
 
  public:
-    Website(int parentPort, int childPort) {
+    Website(int parentPort, int childPort, bool autoSend) {
         parentConnection = new Connection(parentPort);
         childConnection = new Connection(childPort);
+        automatic = autoSend;
     }
 
     void run() {
@@ -56,25 +59,30 @@ class Website {
         Poco::RunnableAdapter<Website> readerFuncAdaptChild(*this, &Website::readIncomingChildData);
         Poco::Thread childReaderThread;
         childReaderThread.start(readerFuncAdaptChild);
-
-
-        srand(time(NULL) + 123);
+        
         parentConnection->waitForEstablishment();
+        
+        srand(time(NULL) + 123);
         while (true) {
-            sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
-            // std::cout << "Sending to Parent: " << policy << std::endl;
-            // parentConnection->sendData(policy);
+        
+            if (automatic) {
+                sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
+            }
+            else {
+                std::cout << "\nPress enter to send POLICY" << std::endl;
+                getchar();
+            }
+            
+            std::cout << "Sending to Parent: " << policy << std::endl;
+            parentConnection->sendData(policy);
         }
+        
     }
 };
 
 int main(int argc, char **argv) {
-    try {
-        Website website(std::stoi(argv[1]), std::stoi(argv[2]));
-        website.run();
-    }
-    catch (Poco::IOException e) {
-        std::cout << e.displayText() << e.what();
-    }
+    Website website(std::stoi(argv[1]), std::stoi(argv[2]), (strcmp(argv[3], "True") == 0) ? true : false);
+    website.run();
+    
     return 0;
 }
