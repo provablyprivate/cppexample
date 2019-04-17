@@ -1,12 +1,14 @@
 #ifndef SRC_INTERFACES_INTERFACEHELPER_H_
 #define SRC_INTERFACES_INTERFACEHELPER_H_
 #include <sstream>
+#include <string>
 #include <vector>
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/HexBinaryEncoder.h"
 #include "Poco/StreamCopier.h"
 
-using namespace std;
+using std::string;
+using std::vector;
 
 class InterfaceHelper {
  private:

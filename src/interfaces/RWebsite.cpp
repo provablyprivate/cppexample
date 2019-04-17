@@ -2,16 +2,14 @@
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 
 class RWebsite {
  private:
-    Connection *iWebsiteConnection;
-    Connection *oWebsiteConnection;
-    Connection *websiteParentConnection;
-    Connection *websiteChildConnection;
-    InterfaceHelper * helper;
+    Connection      *iWebsiteConnection, *oWebsiteConnection, *websiteParentConnection, *websiteChildConnection;
+    InterfaceHelper *helper;
 
+    // ADD COMMENTS HERE
     void iWebsiteConnectionHandler() {
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);
@@ -21,12 +19,12 @@ class RWebsite {
         websiteChildConnection->waitForEstablishment();
         websiteParentConnection->waitForEstablishment();
 
-        std::string s;
+        std::string incoming;
         while (true) {
             iWebsiteConnection->waitForReceivedData();
-            s = iWebsiteConnection->getData();
-            std::cout << "Received from iWebsite: " << s << std::endl;
-            std::vector<std::string> messages = helper->splitString(s, '.');
+            incoming = iWebsiteConnection->getData();
+            std::cout << "Received from iWebsite: " << incoming << std::endl;
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() > 2) {
                 //From OChild
@@ -38,10 +36,16 @@ class RWebsite {
 
             } else if (messages.size() > 1) {
                 //From OParent
-                oWebsiteConnection->sendData(s);
+                oWebsiteConnection->sendData(incoming);
             }
 
-            if (DEBUG) { if (s == "consent") websiteParentConnection->sendData(s); else websiteChildConnection->sendData(s); }
+            if (DEBUG) {
+                if (incoming == "consent") {
+                    websiteParentConnection->sendData(incoming);
+                } else {
+                    websiteChildConnection->sendData(incoming);
+                }
+            }
         }
     }
 
@@ -70,16 +74,18 @@ class RWebsite {
 
         oWebsiteConnection->waitForEstablishment();
         websiteParentConnection->waitForEstablishment();
+
+        //ADD COMMNETS HERE
         // Main thread continues waiting for data from Website
-        std::string s;
+        std::string incoming;
         while (true) { // Get policy from Website, forward to Parent via OWebsite
             websiteParentConnection->waitForReceivedData();
-            s = websiteParentConnection->getData();
+            incoming = websiteParentConnection->getData();
 
-            std::cout << "Received from Website: " << s << std::endl;
+            std::cout << "Received from Website: " << incoming << std::endl;
 
-            oWebsiteConnection->sendData(helper->encodeHex(s));
-            if (DEBUG) { std::cout << "Sending it to OWebsite" << std::endl; oWebsiteConnection->sendData(s); }
+            oWebsiteConnection->sendData(helper->encodeHex(incoming));
+            if (DEBUG) { std::cout << "Sending it to OWebsite" << std::endl; oWebsiteConnection->sendData(incoming); }
         }
 
     }

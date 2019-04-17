@@ -1,12 +1,11 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
-#include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 class Child {
-
-private:
+ private:
     Connection *websiteConnection;
 
     std::string privateData;
@@ -15,11 +14,10 @@ private:
         privateData = "private data";
     }
 
-public:
+ public:
     Child(std::string websiteIP, int websitePort) {
         websiteConnection = new Connection(websiteIP, websitePort);
     }
-
 
     void run() {
         createPrivateData();
@@ -33,10 +31,7 @@ public:
             //std::cout << "Sending to Website: " << privateData << std::endl;
             //websiteConnection->sendData(privateData);
         }
-
     }
-
-
 };
 
 int main(int argc, char **argv) {

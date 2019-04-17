@@ -1,17 +1,24 @@
 #include "./Crypt.h"
 
+#include <string>
+#include <vector>
+
 /*  Usage
  *      Create an instance of the crypt class.
  *      Then use the methods given to encrypt
- *      and decrypt std::string
+ *      and decrypt string
  *
  *      Check main functions for better usage
  * */
 
-
-std::string Crypt::jsonToString(Poco::JSON::Object::Ptr json) {
+/*! \brief Returns the JSON as a string
+ *
+ * \return string data
+ */
+string Crypt::JSONToString(Poco::JSON::Object::Ptr JSON) {
     std::stringstream data;
-    json->stringify(data);
+    JSON->stringify(data);
+
     return data.str();
 }
 
@@ -21,8 +28,8 @@ std::string Crypt::jsonToString(Poco::JSON::Object::Ptr json) {
  *
  * \return Crypt privateCrypt
  */
-Crypt::Crypt(std::string publicKey, std::string privateKey) {
-    RSAKey key(RSAKey(publicKey, privateKey));
+Crypt::Crypt(string public_key, string private_key) {
+    RSAKey key(RSAKey(public_key, private_key));
     digestEngine = new RSADigestEngine(key);
     cipher = factory.createCipher(key);
 }
@@ -33,8 +40,8 @@ Crypt::Crypt(std::string publicKey, std::string privateKey) {
  *
  * \return Crypt publicCrypt
  */
-Crypt::Crypt(std::string publicKey) {
-    RSAKey key(publicKey);
+Crypt::Crypt(string public_key) {
+    RSAKey key(public_key);
     digestEngine = new RSADigestEngine(key);
     cipher = factory.createCipher(key);
 }
@@ -43,20 +50,20 @@ Crypt::Crypt(std::string publicKey) {
  *
  * The encryption can only be done with the intended recipients PUBLIC key.
  *
- * \return std::string encrypted
+ * \return string encrypted
  */
-std::string Crypt::encrypt(std::string a) {
-    return cipher->encryptString(a, Poco::Crypto::Cipher::ENC_BASE64);
+string Crypt::encrypt(string input) {
+    return cipher->encryptString(input, Cipher::ENC_BASE64);
 }
 
 /*! \brief Decrypts a string
  *
  * The decryption can only be done with the intended recipients PRIVATE key.
  *
- * \return std::string decrypted
+ * \return string decrypted
  */
-std::string Crypt::decrypt(std::string a) {
-    return cipher->decryptString(a, Poco::Crypto::Cipher::ENC_BASE64);;
+string Crypt::decrypt(string input) {
+    return cipher->decryptString(input, Cipher::ENC_BASE64);;
 }
 
 /*! \brief Sign the JSON object and returns the signature
@@ -64,13 +71,14 @@ std::string Crypt::decrypt(std::string a) {
  * Note that the signature created gets converted to a hex string before
  * it is returned!
  *
- * \return std::string signature
+ * \return string signature
  */
-std::string Crypt::sign(Poco::JSON::Object::Ptr json) {
+string Crypt::sign(Poco::JSON::Object::Ptr JSON) {
     digestEngine->reset();
-    digestEngine->update(jsonToString(json));
-    std::vector<unsigned char> v = digestEngine->signature();
-    return digestEngine->digestToHex(v);
+    digestEngine->update(JSONToString(JSON));
+    std::vector<unsigned char> vector = digestEngine->signature();
+
+    return digestEngine->digestToHex(vector);
 }
 
 /*! \brief Verifies the JSON against the signature string
@@ -80,9 +88,10 @@ std::string Crypt::sign(Poco::JSON::Object::Ptr json) {
  *
  * \return bool verified
  */
-bool Crypt::verify(Poco::JSON::Object::Ptr json, std::string digest) {
+bool Crypt::verify(Poco::JSON::Object::Ptr JSON, string digest) {
     digestEngine->reset();
-    digestEngine->update(jsonToString(json));
-    std::vector<unsigned char> v = digestEngine->digestFromHex(digest);
-    return digestEngine->verify(v);
+    digestEngine->update(JSONToString(JSON));
+    std::vector<unsigned char> vector = digestEngine->digestFromHex(digest);
+
+    return digestEngine->verify(vector);
 }

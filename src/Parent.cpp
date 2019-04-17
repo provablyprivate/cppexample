@@ -1,12 +1,12 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
+#include <string>
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
 
 class Parent {
-
-private:
+ private:
     Connection *websiteConnection;
     std::string consent;
     Poco::Thread readerThread;
@@ -24,11 +24,10 @@ private:
         }
     }
 
-public:
+ public:
     Parent(std::string websiteIP, int websitePort) {
         websiteConnection = new Connection(websiteIP, websitePort);
     }
-
 
     void run() {
         createConsent();
@@ -45,10 +44,7 @@ public:
             //std::cout << "Sending to Website: " << consent << std::endl;
             //websiteConnection->sendData(consent);
         }
-
     }
-
-
 };
 
 int main(int argc, char **argv) {

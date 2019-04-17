@@ -2,22 +2,25 @@
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 #include "Poco/HexBinaryDecoder.h"
 #include "Poco/StreamCopier.h"
 
 class IParent {
  private:
-    Connection *rParentConnection;
-    Connection *oWebsiteConnection;
-    Crypt * privateParentCrypt;
-    Crypt * publicWebsiteCrypt;
-    JSONHandler * websiteJSON;
-    std::string recievedMessage;
+    Connection      * rParentConnection,  * oWebsiteConnection;
+    Crypt           * privateParentCrypt, * publicWebsiteCrypt;
     InterfaceHelper * helper;
+    JSONHandler     * websiteJSON;
+    std::string recievedMessage;
     bool validSignature;
     Poco::Event JSONVerified = Poco::Event(true);
 
+    /* Decodes the hex containing websites encrypted message.
+     * Decrypts this message, encodes it back to hex and replaces
+     * the encrypted message with the decrypted one. The new message is
+     * sent to Parent via RParent.
+     */
     void rParentConnectionHandler() {
         Poco::Thread rParentConnectionThread;
         rParentConnectionThread.start(*rParentConnection);
@@ -32,7 +35,6 @@ class IParent {
 
             std::string message = recievedMessage + "." + helper->encodeHex(decrypted);
             rParentConnection->sendData(message);
-
         }
     }
 
@@ -54,23 +56,24 @@ class IParent {
         oWebsiteConnectionThread.start(*oWebsiteConnection);
         oWebsiteConnection->waitForEstablishment();
 
-
-        //Put in own function??
-        std::string s;
+        /* Decodes the incoming hex messages in order to verify
+         * the JSON against the signature. If the signature isn't valid,
+         * the loop resets. Otherwise, RParent is awoken.
+         */
+        std::string incoming;
         while (true) {
             oWebsiteConnection->waitForReceivedData();
-            s = oWebsiteConnection->getData();
-            std::cout << "Received from OWebsite: " << s << std::endl;
+            incoming = oWebsiteConnection->getData();
+            std::cout << "Received from OWebsite: " << incoming << std::endl;
 
-            std::vector<std::string> messages = helper->splitString(s, '.');
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
             websiteJSON = new JSONHandler(messages[0]);
             std::string websiteSignature = messages[1];
 
             validSignature = publicWebsiteCrypt->verify(websiteJSON->getObject(), websiteSignature);
             if (!validSignature) continue;
 
-            //Different. we need this to be global. or????
-            recievedMessage = s;
+            recievedMessage = incoming;
             JSONVerified.set();
         }
     }

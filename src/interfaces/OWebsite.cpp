@@ -2,18 +2,14 @@
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 
 class OWebsite {
  private:
-    Connection      * iParentConnection;
-    Connection      * oChildConnection;
-    Connection      * rWebsiteConnection;
-    Crypt           * privateWebsiteCrypt;
-    Crypt           * publicChildCrypt;
-    Crypt           * publicParentCrypt;
-    InterfaceHelper * helper;
-    JSONHandler     * websiteJSON;
+    Connection      *iParentConnection, *oChildConnection, *rWebsiteConnection;
+    Crypt           *privateWebsiteCrypt, *publicChildCrypt, *publicParentCrypt;
+    InterfaceHelper *helper;
+    JSONHandler     *websiteJSON;
 
  public:
     OWebsite() {
@@ -25,9 +21,12 @@ class OWebsite {
         publicChildCrypt    = new Crypt("./src/rsa-keys(child.pub");
         publicParentCrypt   = new Crypt("./src/rsa-keys(parent.pub");
         websiteJSON         = new JSONHandler();
+
         websiteJSON->put("Type", "Consent");
     }
 
+    /* ADD COMMENTS HERE
+     */
     void run() {
         Poco::Thread rWebsiteConnectionThread;
         rWebsiteConnectionThread.start(*rWebsiteConnection);
@@ -42,28 +41,28 @@ class OWebsite {
         oChildConnection->waitForEstablishment();
         iParentConnection->waitForEstablishment();
 
-        std::string s;
+        std::string incoming;
         while (true) {
             rWebsiteConnection->waitForReceivedData();
-            s = rWebsiteConnection->getData();
-            std::cout << "Received from RWebsite: " << s << std::endl;
+            incoming  = rWebsiteConnection->getData();
+            std::cout << "Received from RWebsite: " << incoming << std::endl;
 
-            std::vector<std::string> messages = helper->splitString(s, '.');
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() > 1) {
                 std::cout << "Forwarding to iParent" << std::endl;
-                oChildConnection->sendData(s);
+                oChildConnection->sendData(incoming);
 
             } else if (messages.size() > 0) {
                 std::string policy = messages[0];
                 websiteJSON->put("Value", policy);
-                std::string jsonHex = websiteJSON->toHex();
+                std::string JSONHex = websiteJSON->toHex();
                 std::string signatureHex = privateWebsiteCrypt->sign(websiteJSON->getObject());
-                std::string message = jsonHex + '.' + signatureHex;
+                std::string message = JSONHex + '.' + signatureHex;
                 iParentConnection->sendData(message);
 
             } else {
-                if (DEBUG) { std::cout << "Sending it to IParent" << std::endl; iParentConnection->sendData(s); }
+                if (DEBUG) { std::cout << "Sending it to IParent" << std::endl; iParentConnection->sendData(incoming); }
                 continue;
             }
         }

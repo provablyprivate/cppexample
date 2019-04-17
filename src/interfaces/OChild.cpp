@@ -1,44 +1,25 @@
-/*
- *TODO: Should the child accumulate messages into a buffer, and send all once a consent is received?
- *
- * How the created JSON of the Child will look like:
- *
- * {
- *  "Type":  "PDATA",
- *  "Value": "*ENCRYPTED*",
- *  "Previous: {
- *      "Json": *Parent JSON*
- *      "Signature: *Parent Signature*
- *      }
- * }
- */
-
 #include "./Constants.h"
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 
 class OChild {
  private:
-    Connection *rChildConnection;
-    Connection *iWebsiteConnection;
-    Connection *oWebsiteConnection;
-    Crypt * privateChildCrypt;
-    Crypt * publicParentCrypt;
-    Crypt * publicWebsiteCrypt;
-    JSONHandler * childJSON;
-    InterfaceHelper * helper;
+    Connection      *rChildConnection, *iWebsiteConnection, *oWebsiteConnection;
+    Crypt           *privateChildCrypt, *publicParentCrypt, *publicWebsiteCrypt;
+    JSONHandler     *childJSON;
+    InterfaceHelper *helper;
     bool validSignature;
     Poco::Event JSONUpdated = Poco::Event(true);
 
     /*! \brief Relays the data to the recipient
      *
      *  JSONUpdated.wait() makes the function sleep until one of the threads signal an
-     *  update to the Json object. When woken up, the function will check if all flags are set,
+     *  update to the JSON object. When woken up, the function will check if all flags are set,
      *  i.e. that every thread has completed its computation. If not, the loop is reset.
      *
-     *  If all flags are set the constructed message will have the format "jsonHex.signatureHex".
+     *  If all flags are set the constructed message will have the format "JSONHex.signatureHex".
      *  Once the message is sent, the global 'flags' variable is reset.
      */
     void relayData() {
@@ -46,12 +27,13 @@ class OChild {
         while (true) {
             JSONUpdated.wait();
             if (helper->all()) {
-                std::string jsonHex = childJSON->toHex();
+                std::string JSONHex = childJSON->toHex();
                 std::string signatureHex = privateChildCrypt->sign(childJSON->getObject());
-                std::string message = jsonHex + "." + signatureHex;
+                std::string message = JSONHex + "." + signatureHex;
                 std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
                 helper->clear();
+
             } else {
                 if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
                 continue;
@@ -78,15 +60,15 @@ class OChild {
         oWebsiteConnectionThread.start(*oWebsiteConnection);
         oWebsiteConnection->waitForEstablishment();
 
-        std::string s;
+        std::string incoming;
         while (true) {
             oWebsiteConnection->waitForReceivedData();
-            s = oWebsiteConnection->getData();
-            std::cout << "Received from OWebsite: " << s << std::endl;
+            incoming = oWebsiteConnection->getData();
+            std::cout << "Received from OWebsite: " << incoming << std::endl;
 
-            // It is known that the recieved message will be of format JsonHEX.SignatureHEX
+            // It is known that the recieved message will be of format JSONHEX.SignatureHEX
             // Hence we can 'hard code' which hex needs to be decoded or not.
-            std::vector<std::string> messages = helper->splitString(s, '.');
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
             JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string previousSignature = messages[1];
 
@@ -94,7 +76,7 @@ class OChild {
             if (!validSignature) continue;
 
             JSONHandler * previous = new JSONHandler();
-            previous->put("Json", previousJSON->getObject());
+            previous->put("JSON", previousJSON->getObject());
             previous->put("Signature", previousSignature);
             childJSON->put("Previous", previous->getObject());
 
@@ -119,13 +101,13 @@ class OChild {
         rChildConnectionThread.start(*rChildConnection);
         rChildConnection->waitForEstablishment();
 
-        std::string s;
+        std::string incoming;
         while (true) {
             rChildConnection->waitForReceivedData();
-            s = rChildConnection->getData();
-            std::cout << "Received from RChild: " << s << std::endl;
+            incoming = rChildConnection->getData();
+            std::cout << "Received from RChild: " << incoming << std::endl;
 
-            string encryptedData = publicWebsiteCrypt->encrypt(s);
+            string encryptedData = publicWebsiteCrypt->encrypt(incoming);
             childJSON->put("Value", encryptedData);
 
             helper->set(0, true);
@@ -139,7 +121,7 @@ class OChild {
         iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
         oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_1);
 
-        helper = new InterfaceHelper(2);
+        helper             = new InterfaceHelper(2);
 
         privateChildCrypt  = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
         publicParentCrypt  = new Crypt("./src/rsa-keys/parent.pub");
@@ -147,7 +129,6 @@ class OChild {
 
         childJSON          = new JSONHandler();
         childJSON->put("Type", "PDATA");  // This might not follow type system! Unclear!!
-
     }
 
     /*! \brief Main function run by the class

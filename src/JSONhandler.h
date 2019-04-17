@@ -1,7 +1,8 @@
-// See jsonhandler.cpp for detailed description of variables and functions
-
+// See JSONhandler.cpp for detailed description of variables and functions
 #ifndef SRC_JSONHANDLER_H_
 #define SRC_JSONHANDLER_H_
+#include <string>
+
 #include "Poco/JSON/Parser.h"
 #include "Poco/HexBinaryEncoder.h"
 
@@ -16,9 +17,9 @@ class JSONHandler {
 
  public:
     JSONHandler();
-    ~JSONHandler();
     explicit JSONHandler(string input);
     explicit JSONHandler(Object::Ptr input);
+    ~JSONHandler();
 
     void put(string key, Var value);
     Var get(string data);

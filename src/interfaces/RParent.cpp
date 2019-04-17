@@ -4,11 +4,14 @@
 
 class RParent {
  private:
-    Connection *iParentConnection;
-    Connection *oParentConnection;
-    Connection *parentConnection;
-    InterfaceHelper * helper;
+    Connection      *iParentConnection, *oParentConnection, *parentConnection;
+    InterfaceHelper *helper;
 
+    /* Decodes and decrypts the policy data to parent.
+     * Encodes the decrypted data back to hex. The original
+     * message will be sent to OParent, whereas the decrypted
+     * messages gets sent to Parent.
+     */
     void iParentConnectionHandler() {
         Poco::Thread iParentConnectionThread;
         iParentConnectionThread.start(*iParentConnection);
@@ -16,14 +19,12 @@ class RParent {
         iParentConnection->waitForEstablishment();
         oParentConnection->waitForEstablishment();
         parentConnection->waitForEstablishment();
-        std::string s;
+        std::string incoming;
         while (true) {
             iParentConnection->waitForReceivedData();
-            s = iParentConnection->getData();
-            std::cout << "Received from IParent: " << s << std::endl;
-
-            std::vector<std::string> messages = helper->splitString(s, '.');
-            //since we know that the message is going to be hex.hex.hex we can do following
+            incoming = iParentConnection->getData();
+            std::cout << "Received from IParent: " << incoming << std::endl;
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             std::string toOParent = messages[0] + '.' + messages[1];
             std::string toParent = helper->decodeHex(messages[2]);
@@ -31,8 +32,7 @@ class RParent {
             oParentConnection->sendData(toOParent);
             parentConnection->sendData(toParent);
 
-            // pass it along to parent (and oparent?)
-            if (DEBUG) { std::cout << "Sending it to Parent" << std::endl; parentConnection->sendData(s); }
+            if (DEBUG) { std::cout << "Sending it to Parent" << std::endl; parentConnection->sendData(incoming); }
         }
     }
 
@@ -57,14 +57,16 @@ class RParent {
 
         oParentConnection->waitForEstablishment();
         parentConnection->waitForEstablishment();
-        std::string s;
+
+        /* Relays all messages from Parents directly to OParent. */
+        std::string incoming;
         while (true) {
             parentConnection->waitForReceivedData();
-            s = parentConnection->getData();
-            std::cout << "Received from Parent: " << s << std::endl;
+            incoming = parentConnection->getData();
+            std::cout << "Received from Parent: " << incoming << std::endl;
 
-            oParentConnection->sendData(helper->encodeHex(s));
-            if (DEBUG) { std::cout << "Sending it to OParent" << std::endl; oParentConnection->sendData(s); }
+            oParentConnection->sendData(helper->encodeHex(incoming));
+            if (DEBUG) { std::cout << "Sending it to OParent" << std::endl; oParentConnection->sendData(incoming); }
         }
     }
 };

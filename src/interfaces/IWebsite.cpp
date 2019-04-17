@@ -1,26 +1,17 @@
 #include "./Constants.h"
 #include "../Connection.h"
 #include "./InterfaceHelper.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 #include "../Crypt.cpp"
 
 
 class IWebsite {
 private:
-    Connection *rWebsiteConnection;
-    Connection *oChildConnection;
-    Connection *oParentConnection;
-    
-    InterfaceHelper *helper;
-    JSONHandler *parentJSON;
-    JSONHandler *childJSON;
-    
-    Crypt *privateWebsiteCrypt;
-    Crypt *publicParentCrypt;
-    Crypt *publicChildCrypt;
-    
-    bool validParentSignature;
-    bool validChildSignature;
+    Connection      * rWebsiteConnection,  * oChildConnection,   * oParentConnection;
+    Crypt           * privateWebsiteCrypt, * publicParentCrypt, * publicChildCrypt;
+    InterfaceHelper * helper;
+    JSONHandler     * parentJSON, * childJSON;
+    bool validParentSignature, validChildSignature;
 
     void oChildConnectionHandler() {
         Poco::Thread oChildConnectionThread;
@@ -28,26 +19,26 @@ private:
 
         rWebsiteConnection->waitForEstablishment();
         oChildConnection->waitForEstablishment();
-        
-        std::string s; // pdata goes here
+
+        std::string incoming;
         while (true) {
             oChildConnection->waitForReceivedData();
-            std:vector<std::string> messages = helper->splitString(s, '.');
-            
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
+
             if (messages.size() != 2)
                 continue;
-            
+
             childJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string childSignature = helper->decodeHex(messages[1]);
             validChildSignature = publicChildCrypt->verify(childJSON->getObject(), childSignature);
-            
+
             if (!validChildSignature)
                 continue;
-            
+
             // Decrypt pdata, pass to Website (via RWebsite)
             std::string privateData = privateWebsiteCrypt->decrypt(childJSON->get("Value"));
             rWebsiteConnection->sendData(privateData);
-            
+
         }
     }
 
@@ -76,29 +67,29 @@ public:
 
         rWebsiteConnection->waitForEstablishment();
         oParentConnection->waitForEstablishment();
-        
-        std::string s; // consent goes here
+
+        std::string incoming; // consent goes here
         while (true) {
             oParentConnection->waitForReceivedData();
-            s = oParentConnection->getData();
-            
-            std::vector<std::string> messages = helper->splitString(s, 's');
-            
+            incoming = oParentConnection->getData();
+
+            std::vector<std::string> messages = helper->splitString(incoming, 's');
+
             if (messages.size() != 2)
                 continue;
-            
+
             parentJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string parentSignature = helper->decodeHex(messages[1]);
-            
+
             validParentSignature = publicParentCrypt->verify(parentJSON->getObject(), parentSignature);
-            
+
             if (!validParentSignature)
                 continue;
-            
-            rWebsiteConnection->sendData(s);
+
+            rWebsiteConnection->sendData(incoming);
             // decrypt, verify signature etc, pass to RWebsite
-            
-            
+
+
         }
     }
 

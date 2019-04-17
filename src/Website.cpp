@@ -1,12 +1,12 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
-#include <unistd.h>
 #include <stdlib.h>
+#include <string>
 #include <time.h>
+#include <unistd.h>
 
 class Website {
-
-private:
+ private:
     Connection *parentConnection;
     Poco::Thread parentConnectionThread;
     Connection *childConnection;
@@ -38,12 +38,11 @@ private:
         }
     }
 
-public:
+ public:
     Website(int parentPort, int childPort) {
         parentConnection = new Connection(parentPort);
         childConnection = new Connection(childPort);
     }
-
 
     void run() {
         createPolicy();
@@ -63,13 +62,10 @@ public:
         parentConnection->waitForEstablishment();
         while (true) {
             sleep(rand() % 20 + 1); // Sleep between 1 and 20 seconds
-            //std::cout << "Sending to Parent: " << policy << std::endl;
-            //parentConnection->sendData(policy);
+            // std::cout << "Sending to Parent: " << policy << std::endl;
+            // parentConnection->sendData(policy);
         }
-
     }
-
-
 };
 
 int main(int argc, char **argv) {

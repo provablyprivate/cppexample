@@ -2,29 +2,28 @@
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
 #include "../Crypt.cpp"
-#include "../Jsonhandler.cpp"
+#include "../JSONhandler.cpp"
 
 class OParent {
  private:
-    Connection      * iWebsiteConnection;
-    Connection      * rParentConnection;
-    Crypt           * privateParentCrypt;
-    Crypt           * publicChildCrypt;
-    Crypt           * publicWebsiteCrypt;
-    InterfaceHelper * helper;
-    JSONHandler     * parentJSON;
+    Connection      *iWebsiteConnection, *rParentConnection;
+    Crypt           *privateParentCrypt, *publicChildCrypt, *publicWebsiteCrypt;
+    InterfaceHelper *helper;
+    JSONHandler     *parentJSON;
     Poco::Event JSONUpdated = Poco::Event(true);
 
-    //identical to OChild. only thing different is class json and crypt. generlize?
+    /* Creates the message sent to IWebsite, ie the parent JSON and
+     * signature encoded as a dot separated hex message
+     */
     void relayData() {
         iWebsiteConnection->waitForEstablishment();
         if (DEBUG) iWebsiteConnection->sendData("Test data from OParent");
         while (true) {
             JSONUpdated.wait();
             if (helper->all()) {
-                std::string jsonHex = parentJSON->toHex();
+                std::string JSONHex = parentJSON->toHex();
                 std::string signatureHex = privateParentCrypt->sign(parentJSON->getObject());
-                std::string message = jsonHex + "." + signatureHex;
+                std::string message = JSONHex + "." + signatureHex;
                 std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
                 helper->clear();
@@ -35,30 +34,30 @@ class OParent {
         }
     }
 
+    /* Sets the previous JSON and signature in a separate field OR
+     * encrypts and sets parents consent reponse in the Value field.
+     * The cases are distinguished by looking at the size of the message.
+     * The former will contain two dot separated messages, whereas the latter
+     * will be a single message. Both process signal that the JSON has been updated.
+     * */
     void rParentConnectionHandler() {
         Poco::Thread rParentConnectionThread;
         rParentConnectionThread.start(*rParentConnection);
         rParentConnection->waitForEstablishment();
 
-        std::string s;
+        std::string incoming;
         while (true) {
             rParentConnection->waitForReceivedData();
-            s = rParentConnection->getData();
-            std::cout << "Received from RParent: " << s << std::endl;
-
-            //The following is different from OChild since incoming messages can be of two types
-            //But it essentially works like Owebsite and Rchild in one function
-            //Difference is that we don't verify signature here since IParent already does that
-            //If we do it anyway we can generlize function??
-
-            std::vector<std::string> messages = helper->splitString(s, '.');
+            incoming = rParentConnection->getData();
+            std::cout << "Received from RParent: " << incoming << std::endl;
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() > 1) {
                 JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
                 std::string previousSignature = messages[1];
 
                 JSONHandler * previous = new JSONHandler();
-                previous->put("Json", previousJSON->getObject());
+                previous->put("JSON", previousJSON->getObject());
                 previous->put("Signature", previousSignature);
                 parentJSON->put("Previous", previous->getObject());
 
@@ -66,7 +65,7 @@ class OParent {
                 JSONUpdated.set();
 
             } else if (messages.size() > 0) {
-                std::string consent = messages[0]; // Encrypted consent insttead of s, like Ochild
+                std::string consent = messages[0];
                 std::string encryptedData = privateParentCrypt->encrypt(consent);
 
                 parentJSON->put("Value", encryptedData);
@@ -77,13 +76,10 @@ class OParent {
     }
 
  public:
-    //All of this is almost identical to Ochild
     OParent(std::string websiteIP) {
         rParentConnection  = new Connection(O_INTERNAL_PORT);
         iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_2);
-
         helper             = new InterfaceHelper(2);
-
         privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub", "./src/rsa-keys/parent");
         publicChildCrypt   = new Crypt("./src/rsa-keys/child.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
