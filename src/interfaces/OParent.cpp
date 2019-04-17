@@ -1,4 +1,3 @@
-#include <bitset>
 #include "./Constants.h"
 #include "./InterfaceHelper.cpp"
 #include "../Connection.h"
@@ -7,13 +6,13 @@
 
 class OParent {
  private:
-    Connection *rParentConnection;
-    Connection *iWebsiteConnection;
-    Crypt * privateParentCrypt;
-    Crypt * publicChildCrypt;
-    Crypt * publicWebsiteCrypt;
-    JSONHandler * parentJSON;
+    Connection      * iWebsiteConnection;
+    Connection      * rParentConnection;
+    Crypt           * privateParentCrypt;
+    Crypt           * publicChildCrypt;
+    Crypt           * publicWebsiteCrypt;
     InterfaceHelper * helper;
+    JSONHandler     * parentJSON;
     Poco::Event JSONUpdated = Poco::Event(true);
 
     //identical to OChild. only thing different is class json and crypt. generlize?
@@ -67,7 +66,7 @@ class OParent {
                 JSONUpdated.set();
 
             } else if (messages.size() > 0) {
-                std::string consent = messages[1]; // Encrypted consent insttead of s, like Ochild
+                std::string consent = messages[0]; // Encrypted consent insttead of s, like Ochild
                 std::string encryptedData = privateParentCrypt->encrypt(consent);
 
                 parentJSON->put("Value", encryptedData);
@@ -85,7 +84,7 @@ class OParent {
 
         helper             = new InterfaceHelper(2);
 
-        privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub","./src/rsa-keys/parent");
+        privateParentCrypt = new Crypt("./src/rsa-keys/parent.pub", "./src/rsa-keys/parent");
         publicChildCrypt   = new Crypt("./src/rsa-keys/child.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
         parentJSON         = new JSONHandler();
