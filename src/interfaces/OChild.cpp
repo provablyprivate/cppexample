@@ -6,10 +6,10 @@
 
 class OChild {
  private:
-    Connection      *rChildConnection, *iWebsiteConnection, *oWebsiteConnection;
-    Crypt           *privateChildCrypt, *publicParentCrypt, *publicWebsiteCrypt;
-    JSONHandler     *childJSON;
-    InterfaceHelper *helper;
+    Connection      * rChildConnection,  * iWebsiteConnection, * oWebsiteConnection;
+    Crypt           * privateChildCrypt, * publicParentCrypt,  * publicWebsiteCrypt;
+    InterfaceHelper * helper;
+    JSONHandler     * childJSON;
     bool validSignature;
     Poco::Event JSONUpdated = Poco::Event(true);
 
@@ -33,9 +33,9 @@ class OChild {
                 std::cout << "Sending to iWebsite: " << message << std::endl;
                 iWebsiteConnection->sendData(message);
                 helper->clear();
-
             } else {
                 if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
+
                 continue;
             }
         }
@@ -121,14 +121,13 @@ class OChild {
         iWebsiteConnection = new Connection(websiteIP, I_EXTERNAL_PORT_1);
         oWebsiteConnection = new Connection(websiteIP, O_EXTERNAL_PORT_1);
 
-        helper             = new InterfaceHelper(2);
-
         privateChildCrypt  = new Crypt("./src/rsa-keys/child.pub", "./src/rsa-keys/child");
         publicParentCrypt  = new Crypt("./src/rsa-keys/parent.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
 
+        helper             = new InterfaceHelper(2);
         childJSON          = new JSONHandler();
-        childJSON->put("Type", "PDATA");  // This might not follow type system! Unclear!!
+        childJSON->put("Type", "PDATA");
     }
 
     /*! \brief Main function run by the class

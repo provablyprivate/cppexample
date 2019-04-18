@@ -4,10 +4,10 @@
 
 class RParent {
  private:
-    Connection      *iParentConnection, *oParentConnection, *parentConnection;
-    InterfaceHelper *helper;
+    Connection      * iParentConnection, * oParentConnection, * parentConnection;
+    InterfaceHelper * helper;
 
-    /* Decodes and decrypts the policy data to parent.
+    /* Decodes and decrypts the policy data from website.
      * Encodes the decrypted data back to hex. The original
      * message will be sent to OParent, whereas the decrypted
      * messages gets sent to Parent.
@@ -19,6 +19,7 @@ class RParent {
         iParentConnection->waitForEstablishment();
         oParentConnection->waitForEstablishment();
         parentConnection->waitForEstablishment();
+
         std::string incoming;
         while (true) {
             iParentConnection->waitForReceivedData();
@@ -58,7 +59,7 @@ class RParent {
         oParentConnection->waitForEstablishment();
         parentConnection->waitForEstablishment();
 
-        /* Relays all messages from Parents directly to OParent. */
+        /* Relays all incoming messages from Parent directly to OParent. */
         std::string incoming;
         while (true) {
             parentConnection->waitForReceivedData();

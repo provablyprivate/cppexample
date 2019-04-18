@@ -6,10 +6,10 @@
 
 class OWebsite {
  private:
-    Connection      *iParentConnection, *oChildConnection, *rWebsiteConnection;
-    Crypt           *privateWebsiteCrypt, *publicChildCrypt, *publicParentCrypt;
-    InterfaceHelper *helper;
-    JSONHandler     *websiteJSON;
+    Connection      * iParentConnection,   * oChildConnection, * rWebsiteConnection;
+    Crypt           * privateWebsiteCrypt, * publicChildCrypt, * publicParentCrypt;
+    InterfaceHelper * helper;
+    JSONHandler     * websiteJSON;
 
  public:
     OWebsite() {
@@ -25,8 +25,6 @@ class OWebsite {
         websiteJSON->put("Type", "Consent");
     }
 
-    /* ADD COMMENTS HERE
-     */
     void run() {
         Poco::Thread rWebsiteConnectionThread;
         rWebsiteConnectionThread.start(*rWebsiteConnection);
@@ -41,6 +39,11 @@ class OWebsite {
         oChildConnection->waitForEstablishment();
         iParentConnection->waitForEstablishment();
 
+        /* Sending messages either to IParent or OChild. Messages of structure
+         * 'HEX.HEX' will be sent to OChild since this is the parent consent with its
+         * signed JSON. A single hex encoded message is the websites policy. Hence the plain text
+         * policy will be put in the websites JSON, signed, encoded and sent to iParent.
+         */
         std::string incoming;
         while (true) {
             rWebsiteConnection->waitForReceivedData();
@@ -50,7 +53,7 @@ class OWebsite {
             std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() > 1) {
-                std::cout << "Forwarding to iParent" << std::endl;
+                std::cout << "Forwarding to oChild" << std::endl;
                 oChildConnection->sendData(incoming);
 
             } else if (messages.size() > 0) {
@@ -59,6 +62,7 @@ class OWebsite {
                 std::string JSONHex = websiteJSON->toHex();
                 std::string signatureHex = privateWebsiteCrypt->sign(websiteJSON->getObject());
                 std::string message = JSONHex + '.' + signatureHex;
+                std::cout << "Forwarding to iParent" << std::endl;
                 iParentConnection->sendData(message);
 
             } else {

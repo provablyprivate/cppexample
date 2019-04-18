@@ -6,10 +6,9 @@
 
 class RWebsite {
  private:
-    Connection      *iWebsiteConnection, *oWebsiteConnection, *websiteParentConnection, *websiteChildConnection;
-    InterfaceHelper *helper;
+    Connection      * iWebsiteConnection, * oWebsiteConnection, * websiteParentConnection, * websiteChildConnection;
+    InterfaceHelper * helper;
 
-    // ADD COMMENTS HERE
     void iWebsiteConnectionHandler() {
         Poco::Thread iWebsiteConnectionThread;
         iWebsiteConnectionThread.start(*iWebsiteConnection);
@@ -19,24 +18,27 @@ class RWebsite {
         websiteChildConnection->waitForEstablishment();
         websiteParentConnection->waitForEstablishment();
 
+        /* Delegates the messages depending on if it came from Parent or Child.
+         * Messages from Parents will be directly forwarded to OParent in order
+         * to be sent to Child. Messages from child will be decoded and sent in
+         * plain text to the Website.
+         */
         std::string incoming;
         while (true) {
+            //TODO Should we really send consent to website???
             iWebsiteConnection->waitForReceivedData();
             incoming = iWebsiteConnection->getData();
             std::cout << "Received from iWebsite: " << incoming << std::endl;
             std::vector<std::string> messages = helper->splitString(incoming, '.');
 
-            if (messages.size() > 2) {
-                //From OChild
-                std::string toOWebsite = messages[0] + '.' + messages[1];
-                std::string toWebsite =  helper->decodeHex(messages[2]);
-
-                oWebsiteConnection->sendData(toOWebsite);
-                websiteChildConnection->sendData(toWebsite);
-
-            } else if (messages.size() > 1) {
+            if (messages.size() > 1) {
                 //From OParent
                 oWebsiteConnection->sendData(incoming);
+
+            } else if (messages.size() > 0) {
+                //From OChild
+                std::string toWebsite = helper->decodeHex(messages[0]);
+                websiteChildConnection->sendData(toWebsite);
             }
 
             if (DEBUG) {
@@ -75,10 +77,11 @@ class RWebsite {
         oWebsiteConnection->waitForEstablishment();
         websiteParentConnection->waitForEstablishment();
 
-        //ADD COMMNETS HERE
-        // Main thread continues waiting for data from Website
+        /* Forwards policy data from Website directly to OWebsite in order
+         * to be sent to the Parent.
+         */
         std::string incoming;
-        while (true) { // Get policy from Website, forward to Parent via OWebsite
+        while (true) {
             websiteParentConnection->waitForReceivedData();
             incoming = websiteParentConnection->getData();
 

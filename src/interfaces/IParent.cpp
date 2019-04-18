@@ -16,7 +16,7 @@ class IParent {
     bool validSignature;
     Poco::Event JSONVerified = Poco::Event(true);
 
-    /* Decodes the hex containing websites encrypted message.
+    /* Decodes the hex containing the websites encrypted message.
      * Decrypts this message, encodes it back to hex and replaces
      * the encrypted message with the decrypted one. The new message is
      * sent to Parent via RParent.
@@ -58,7 +58,7 @@ class IParent {
 
         /* Decodes the incoming hex messages in order to verify
          * the JSON against the signature. If the signature isn't valid,
-         * the loop resets. Otherwise, RParent is awoken.
+         * the loop resets. Otherwise, rParentConnectionHandler() is awoken.
          */
         std::string incoming;
         while (true) {
@@ -67,17 +67,17 @@ class IParent {
             std::cout << "Received from OWebsite: " << incoming << std::endl;
 
             std::vector<std::string> messages = helper->splitString(incoming, '.');
-            
+
             if (messages.size() != 2)
                 continue;
-            
+
             websiteJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string websiteSignature = messages[1];
             validSignature = publicWebsiteCrypt->verify(websiteJSON->getObject(), websiteSignature);
-            
+
             if (!validSignature)
                 continue;
-            
+
             recievedMessage = incoming;
             JSONVerified.set();
         }

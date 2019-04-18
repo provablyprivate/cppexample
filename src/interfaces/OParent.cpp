@@ -6,14 +6,17 @@
 
 class OParent {
  private:
-    Connection      *iWebsiteConnection, *rParentConnection;
-    Crypt           *privateParentCrypt, *publicChildCrypt, *publicWebsiteCrypt;
-    InterfaceHelper *helper;
-    JSONHandler     *parentJSON;
+    Connection      * iWebsiteConnection, * rParentConnection;
+    Crypt           * privateParentCrypt, * publicChildCrypt,  * publicWebsiteCrypt;
+    InterfaceHelper * helper;
+    JSONHandler     * parentJSON;
     Poco::Event JSONUpdated = Poco::Event(true);
 
-    /* Creates the message sent to IWebsite, ie the parent JSON and
-     * signature encoded as a dot separated hex message
+    /* Creates the message sent to IWebsite, ie the parents JSON and
+     * its signature encoded as a dot separated hex message.
+     *
+     * Note that this is only done when all flags are set to 1, ie when
+     * every threaded process has completed its task.
      */
     void relayData() {
         iWebsiteConnection->waitForEstablishment();
@@ -38,7 +41,7 @@ class OParent {
      * encrypts and sets parents consent reponse in the Value field.
      * The cases are distinguished by looking at the size of the message.
      * The former will contain two dot separated messages, whereas the latter
-     * will be a single message. Both process signal that the JSON has been updated.
+     * will be a single message. Both processes signal that the JSON has been updated.
      * */
     void rParentConnectionHandler() {
         Poco::Thread rParentConnectionThread;
