@@ -20,7 +20,6 @@ class OParent {
      */
     void relayData() {
         iWebsiteConnection->waitForEstablishment();
-        if (DEBUG) iWebsiteConnection->sendData("Test data from OParent");
         while (true) {
             JSONUpdated.wait();
             if (helper->all()) {
@@ -31,7 +30,6 @@ class OParent {
                 iWebsiteConnection->sendData(message);
                 helper->clear();
             } else {
-                if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
                 continue;
             }
         }
@@ -103,12 +101,8 @@ class OParent {
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogOP.txt", "a", stdout);
-    try {OParent oParent(argv[1]);
-        oParent.run();
-    }
-    catch (Poco::FileException e) {
-        std::cout << e.what();
-    }
+    OParent oParent(argv[1]);
+    oParent.run();
+
     return 0;
 }

@@ -33,7 +33,6 @@ class RParent {
             oParentConnection->sendData(toOParent);
             parentConnection->sendData(toParent);
 
-            if (DEBUG) { std::cout << "Sending it to Parent" << std::endl; parentConnection->sendData(incoming); }
         }
     }
 
@@ -67,13 +66,11 @@ class RParent {
             std::cout << "Received from Parent: " << incoming << std::endl;
 
             oParentConnection->sendData(helper->encodeHex(incoming));
-            if (DEBUG) { std::cout << "Sending it to OParent" << std::endl; oParentConnection->sendData(incoming); }
         }
     }
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogRP.txt", "a", stdout);
     RParent rParent(std::stoi(argv[1]));
     rParent.run();
 

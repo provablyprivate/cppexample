@@ -41,13 +41,6 @@ class RWebsite {
                 websiteChildConnection->sendData(toWebsite);
             }
 
-            if (DEBUG) {
-                if (incoming == "consent") {
-                    websiteParentConnection->sendData(incoming);
-                } else {
-                    websiteChildConnection->sendData(incoming);
-                }
-            }
         }
     }
 
@@ -88,14 +81,12 @@ class RWebsite {
             std::cout << "Received from Website: " << incoming << std::endl;
 
             oWebsiteConnection->sendData(helper->encodeHex(incoming));
-            if (DEBUG) { std::cout << "Sending it to OWebsite" << std::endl; oWebsiteConnection->sendData(incoming); }
         }
 
     }
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogRW.txt", "a", stdout);
     RWebsite rWebsite(std::stoi(argv[1]), std::stoi(argv[2]));
     rWebsite.run();
 

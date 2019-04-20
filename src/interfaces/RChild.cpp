@@ -41,7 +41,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogRC.txt", "a", stdout);
     RChild rChild(std::stoi(argv[1]));
     rChild.run();
 

@@ -27,18 +27,20 @@ private:
         std::string incoming;
         while (true) {
             oChildConnection->waitForReceivedData();
+            incoming = oChildConnection->getData();
+            
             std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() != 2)
                 continue;
-
+            
             childJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string childSignature = messages[1];
             validChildSignature = publicChildCrypt->verify(childJSON->getObject(), childSignature);
 
             if (!validChildSignature)
                 continue;
-
+            
             // Decrypt pdata, pass to Website (via RWebsite)
             std::string privateData = privateWebsiteCrypt->decrypt(childJSON->get("Value"));
             rWebsiteConnection->sendData(helper->encodeHex(privateData));
@@ -79,7 +81,7 @@ public:
             oParentConnection->waitForReceivedData();
             incoming = oParentConnection->getData();
 
-            std::vector<std::string> messages = helper->splitString(incoming, 's');
+            std::vector<std::string> messages = helper->splitString(incoming, '.');
 
             if (messages.size() != 2)
                 continue;
@@ -99,7 +101,8 @@ public:
 };
 
 int main() {
-    //if (DEBUG) freopen("./errorlogIW.txt", "a", stdout);
     IWebsite iWebsite;
     iWebsite.run();
+
+    return 0;
 }

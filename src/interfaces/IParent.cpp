@@ -85,12 +85,8 @@ class IParent {
 };
 
 int main(int argc, char **argv) {
-    freopen("./errorlogIP.txt", "a", stdout);
-    try {IParent iParent(argv[1]);
-        iParent.run();
-    }
-    catch (Poco::FileException e) {
-        std::cout << e.what();
-    }
+    IParent iParent(argv[1]);
+    iParent.run();
+
     return 0;
 }

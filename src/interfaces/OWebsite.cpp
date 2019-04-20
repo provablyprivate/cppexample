@@ -58,7 +58,7 @@ class OWebsite {
 
             } else if (messages.size() > 0) {
                 std::string policy = messages[0];
-                websiteJSON->put("Value", policy);
+                websiteJSON->put("Value", publicParentCrypt->encrypt(helper->decodeHex(policy)));
                 std::string JSONHex = websiteJSON->toHex();
                 std::string signatureHex = privateWebsiteCrypt->sign(websiteJSON->getObject());
                 std::string message = JSONHex + '.' + signatureHex;
@@ -66,7 +66,6 @@ class OWebsite {
                 iParentConnection->sendData(message);
 
             } else {
-                if (DEBUG) { std::cout << "Sending it to IParent" << std::endl; iParentConnection->sendData(incoming); }
                 continue;
             }
         }
@@ -74,7 +73,6 @@ class OWebsite {
 };
 
 int main() {
-    //if (DEBUG) freopen("./errorlogOW.txt", "a", stdout);
     OWebsite oWebsite;
     oWebsite.run();
 }

@@ -34,8 +34,6 @@ class OChild {
                 iWebsiteConnection->sendData(message);
                 helper->clear();
             } else {
-                if (DEBUG) iWebsiteConnection->sendData("Some test data from OChild");
-
                 continue;
             }
         }
@@ -151,12 +149,8 @@ class OChild {
 };
 
 int main(int argc, char **argv) {
-    //if (DEBUG) freopen("./errorlogOC.txt", "a", stdout);
-    try {OChild oChild(argv[1]);
-        oChild.run();
-    }
-    catch (Poco::FileException e) {
-        std::cout << e.what();
-    }
+    OChild oChild(argv[1]);
+    oChild.run();
+        
     return 0;
 }
