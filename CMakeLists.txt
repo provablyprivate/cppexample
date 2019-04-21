@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 project(cppexample)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if (UNIX AND NOT APPLE)
     include_directories("include")

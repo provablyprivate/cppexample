@@ -6,25 +6,3 @@ CMakeCache.txt
 CMakeFiles
 Makefile
 cmake_install.cmake
-
-# binaries
-server
-client
-policyhandler
-pdatahandler
-consenthandler
-request
-json
-com
-Child
-OChild
-Parent
-RChild
-ThirdParty
-Website
-IParent
-OParent
-RParent
-IWebsite
-OWebsite
-RWebsite
