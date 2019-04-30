@@ -50,9 +50,7 @@ add_executable(OWebsite src/interfaces/OWebsite.cpp)
 add_executable(IParent src/interfaces/IParent.cpp)
 add_executable(OParent src/interfaces/OParent.cpp)
 add_executable(RParent src/interfaces/RParent.cpp)
-
-add_executable(ThirdParty src/ThirdParty.cpp)
-
+add_executable(ThirdParty src/interfaces/ThirdParty.cpp)
 
 target_link_libraries(Parent ${LIBS})
 target_link_libraries(Child ${LIBS})
@@ -66,3 +64,4 @@ target_link_libraries(OWebsite ${LIBS})
 target_link_libraries(IParent ${LIBS})
 target_link_libraries(OParent ${LIBS})
 target_link_libraries(RParent ${LIBS})
+target_link_libraries(ThirdParty ${LIBS})

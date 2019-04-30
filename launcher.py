@@ -8,7 +8,7 @@ from mininet.cli import CLI
 from mininet.term import makeTerm, cleanUpScreens
 from time import sleep
 
-extendedArchitecture = False
+extendedArchitecture = True
 
 websiteIP = "100.000.000.001"
 websitePortForParent = 20000 # The port that Parent connects to and Website expects Parent to connect to
@@ -52,28 +52,28 @@ def run():
     ifaceID = net.getNodeByName(switchName).intfNames()[1] # The network interface on which the third party will run a sniffer
 
     # Run Website
-    makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./Website {} {} {}".format(websitePortForParent, websitePortForChild, str(autoSend)))
+    makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./bin/Website {} {} {}".format(websitePortForParent, websitePortForChild, str(autoSend)))
     
     if extendedArchitecture: # Run all interface applications
-        makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./IWebsite")
-        makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./OWebsite")
+        makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./bin/IWebsite")
+        makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./bin/OWebsite")
         sleep(1)
-        makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./RWebsite {} {}".format(websitePortForParent, websitePortForChild))
+        makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./bin/RWebsite {} {}".format(websitePortForParent, websitePortForChild))
         
-        makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./OChild {}".format(websiteIP))
+        makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./bin/OChild {}".format(websiteIP))
         sleep(1)
-        makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./RChild {}".format(websitePortForChild))
+        makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./bin/RChild {}".format(websitePortForChild))
         
-        makeTerm(node=net.getNodeByName("parent"), title="IParent", cmd="./IParent {}".format(websiteIP))
-        makeTerm(node=net.getNodeByName("parent"), title="OParent", cmd="./OParent {}".format(websiteIP))
+        makeTerm(node=net.getNodeByName("parent"), title="IParent", cmd="./bin/IParent {}".format(websiteIP))
+        makeTerm(node=net.getNodeByName("parent"), title="OParent", cmd="./bin/OParent {}".format(websiteIP))
         sleep(1)
-        makeTerm(node=net.getNodeByName("parent"), title="RParent", cmd="./RParent {}".format(websitePortForParent))
+        makeTerm(node=net.getNodeByName("parent"), title="RParent", cmd="./bin/RParent {}".format(websitePortForParent))
 
     # Run Parent, Child, and Third Party
     sleep(1)
-    makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./Parent {} {} {}".format(websiteIPUsedByParent, websitePortForParent, str(autoSend)))
-    makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./Child {} {} {}".format(websiteIPUsedByChild, websitePortForChild, str(autoSend)))
-    makeTerm(node=net.getNodeByName(switchName), title="Third Party", cmd="./ThirdParty {} {} {} {}".format(ifaceID, websiteIP, parentIP, childIP))
+    makeTerm(node=net.getNodeByName("parent"), title="Parent", cmd="./bin/Parent {} {} {}".format(websiteIPUsedByParent, websitePortForParent, str(autoSend)))
+    makeTerm(node=net.getNodeByName("child"), title="Child", cmd="./bin/Child {} {} {}".format(websiteIPUsedByChild, websitePortForChild, str(autoSend)))
+    makeTerm(node=net.getNodeByName(switchName), title="Third Party", cmd="./bin/ThirdParty {} {} {} {}".format(ifaceID, websiteIP, parentIP, childIP))
 
 
     CLI(net)

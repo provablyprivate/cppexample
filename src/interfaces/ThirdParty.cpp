@@ -3,10 +3,26 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "./InterfaceHelper.cpp"
+#include "../Crypt.cpp"
+#include "../JSONhandler.cpp"
 
-// TODO: Verify that message is typable under the type system
+InterfaceHelper *helper = new InterfaceHelper();
+
+
 void verify(std::string sender, std::string receiver, std::string message) {
-    std::cout << sender << " -> " << receiver << ":\n" << message << std::endl << std::endl;
+    
+    std::vector<std::string> messageParts = helper->splitString(message, '.');
+    
+    std::string jsonStr = helper->decodeHex(messageParts[0]);
+    JSONHandler *json = new JSONHandler(jsonStr);
+    
+    if (messageParts.size() == 2) {
+        std::string signature = helper->decodeHex(messageParts[1]);
+        //TODO: check signatures etc
+    }
+    
+    std::cout << "\n" << sender << " -> " << receiver << ":\n" << json->toString() << std::endl << std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -17,7 +33,7 @@ int main(int argc, char **argv) {
     hostIP[argv[2]] = "Website";
     hostIP[argv[3]] = "Parent";
     hostIP[argv[4]] = "Child";
-
+    
     int p[2];
     pipe(p);
     
@@ -45,10 +61,19 @@ int main(int argc, char **argv) {
             receiver = hostIP[str.substr(str.find('-', 0) + 1, 15)];
             msgStart = str.find(':', 0) + 2;
             message = str.substr(msgStart, str.length() - msgStart);
+            
+            // Append additional tcp segments until a newline is reached and the message is fully assembled
+            while (true) {
+                std::getline(std::cin, str);
+                if (str == "") {
+                    break;
+                }
+                message += str.substr(msgStart, str.length() - msgStart);
+            }
+            
             verify(sender, receiver, message);
-            std::getline(std::cin, str); // Get rid of extra newline from tcpflow
+            message = "";
         }
-        
     }
     
     else { // Child process
