@@ -1,5 +1,6 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
+#include "./JSONhandler.cpp"
 #include <stdlib.h>
 #include <string>
 #include <time.h>
@@ -12,14 +13,20 @@ class Website {
     Connection *childConnection;
     Poco::Thread childConnectionThread;
 
-    std::string policy;
+    JSONHandler *policyJSON;
     std::string receivedParentData;
     std::string receivedChildData;
 
     bool automatic;
 
     void createPolicy() {
-        policy = "policy";
+        policyJSON = new JSONHandler();
+        policyJSON->put("Type", "POLICY");
+        policyJSON->put("Value", "This is some policy bla bla");
+    }
+    
+    void printAsTerm(JSONHandler *json) {
+        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
     }
 
     void readIncomingChildData() {
@@ -27,7 +34,9 @@ class Website {
         while (true) {
             childConnection->waitForReceivedData();
             receivedChildData = childConnection->getData();
-            std::cout << "Received from Child: " << receivedChildData << std::endl;
+            JSONHandler *pdataJSON = new JSONHandler(receivedChildData);
+            std::cout << "\nReceived a piece of data from Child: " << std::endl;
+            printAsTerm(pdataJSON);
         }
     }
 
@@ -36,7 +45,9 @@ class Website {
         while (true) {
             parentConnection->waitForReceivedData();
             receivedParentData = parentConnection->getData();
-            std::cout << "Received from Parent: " << receivedParentData << std::endl;
+            JSONHandler *consentJSON = new JSONHandler(receivedParentData);
+            std::cout << "\nReceived a piece of data from Parent:" << std::endl;
+            printAsTerm(consentJSON);
         }
     }
 
@@ -73,8 +84,9 @@ class Website {
                 getchar();
             }
             
-            std::cout << "Sending to Parent: " << policy << std::endl;
-            parentConnection->sendData(policy);
+            std::cout << "Sending a piece of data to Parent: " << std::endl;
+            printAsTerm(policyJSON);
+            parentConnection->sendData(policyJSON->toString());
         }
         
     }

@@ -3,6 +3,7 @@
 #include "./InterfaceHelper.cpp"
 #include "../JSONhandler.cpp"
 #include "../Crypt.cpp"
+#include <unistd.h>
 
 class IWebsite {
 private:
@@ -82,7 +83,8 @@ public:
             incoming = oParentConnection->getData();
 
             std::vector<std::string> messages = helper->splitString(incoming, '.');
-
+            
+            std::cout << "Received from OParent: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
             if (messages.size() != 2)
                 continue;
 
@@ -94,8 +96,11 @@ public:
             if (!validParentSignature)
                 continue;
 
-            rWebsiteConnection->sendData(incoming);
-            // decrypt, verify signature etc, pass to RWebsite
+            std::string decryptedConsent = privateWebsiteCrypt->decrypt(parentJSON->get("Value"));
+            std::string toRWebsite = incoming + "." + decryptedConsent;
+            std::vector<std::string> test = helper->splitString(toRWebsite, '.');
+
+            rWebsiteConnection->sendData(toRWebsite);
         }
     }
 };

@@ -30,7 +30,7 @@ class OChild {
                 std::string JSONHex = childJSON->toHex();
                 std::string signatureHex = privateChildCrypt->sign(childJSON->getObject());
                 std::string message = JSONHex + "." + signatureHex;
-                std::cout << "Sending to iWebsite: " << message << std::endl;
+                std::cout << "Sending to iWebsite: " << helper->decodeHex(message) << std::endl;
                 iWebsiteConnection->sendData(message);
                 helper->clear();
             } else {
@@ -62,15 +62,18 @@ class OChild {
         while (true) {
             oWebsiteConnection->waitForReceivedData();
             incoming = oWebsiteConnection->getData();
-            std::cout << "Received from OWebsite: " << incoming << std::endl;
 
             // It is known that the recieved message will be of format JSONHEX.SignatureHEX
             // Hence we can 'hard code' which hex needs to be decoded or not.
             std::vector<std::string> messages = helper->splitString(incoming, '.');
+            
+            std::cout << "Received from OWebsite: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
+            
             JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
             std::string previousSignature = messages[1];
 
-            validSignature = publicParentCrypt->verify(previousJSON->getObject(), previousSignature);
+            validSignature = publicWebsiteCrypt->verify(previousJSON->getObject(), previousSignature);
+
             if (!validSignature) continue;
 
             JSONHandler * previous = new JSONHandler();
@@ -103,7 +106,8 @@ class OChild {
         while (true) {
             rChildConnection->waitForReceivedData();
             incoming = rChildConnection->getData();
-            std::cout << "Received from RChild: " << incoming << std::endl;
+            
+            std::cout << "Received from RChild: " << std::endl << incoming << std::endl;
 
             string encryptedData = publicWebsiteCrypt->encrypt(incoming);
             childJSON->put("Value", encryptedData);
@@ -125,7 +129,7 @@ class OChild {
 
         helper             = new InterfaceHelper(2);
         childJSON          = new JSONHandler();
-        childJSON->put("Type", "PDATA");
+        childJSON->put("Type", "CwebsitePDATA");
     }
 
     /*! \brief Main function run by the class

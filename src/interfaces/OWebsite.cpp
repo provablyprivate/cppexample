@@ -22,7 +22,7 @@ class OWebsite {
         publicParentCrypt   = new Crypt("./src/rsa-keys/parent.pub");
         websiteJSON         = new JSONHandler();
 
-        websiteJSON->put("Type", "Consent");
+        websiteJSON->put("Type", "CparentPOLICY");
     }
 
     void run() {
@@ -48,13 +48,31 @@ class OWebsite {
         while (true) {
             rWebsiteConnection->waitForReceivedData();
             incoming  = rWebsiteConnection->getData();
-            std::cout << "Received from RWebsite: " << incoming << std::endl;
 
             std::vector<std::string> messages = helper->splitString(incoming, '.');
+            
+            std::cout << "Received from RWebsite: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
 
             if (messages.size() > 1) {
                 std::cout << "Forwarding to oChild" << std::endl;
-                oChildConnection->sendData(incoming);
+                
+                
+                JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
+                std::string previousSignature = messages[1];
+
+                JSONHandler * previous = new JSONHandler();
+                previous->put("JSON", previousJSON->getObject());
+                previous->put("Signature", previousSignature);
+                
+                JSONHandler * websiteChildJSON = new JSONHandler();
+                websiteChildJSON->put("Type", "PwebsiteCONSENT");
+                websiteChildJSON->put("Previous", previous->getObject());
+                
+                std::string JSONHex = websiteChildJSON->toHex();
+                std::string signatureHex = privateWebsiteCrypt->sign(websiteChildJSON->getObject());
+                std::string message = JSONHex + "." + signatureHex;
+                
+                oChildConnection->sendData(message);
 
             } else if (messages.size() > 0) {
                 std::string policy = messages[0];

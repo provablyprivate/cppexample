@@ -13,16 +13,23 @@ InterfaceHelper *helper = new InterfaceHelper();
 void verify(std::string sender, std::string receiver, std::string message) {
     
     std::vector<std::string> messageParts = helper->splitString(message, '.');
+    std::string jsonStr;
+        
+    // Non-extended architecture
+    if (messageParts.size() == 1) {
+        jsonStr = messageParts[0];
+    }
     
-    std::string jsonStr = helper->decodeHex(messageParts[0]);
-    JSONHandler *json = new JSONHandler(jsonStr);
-    
+    // Extended architecture
     if (messageParts.size() == 2) {
+        jsonStr = helper->decodeHex(messageParts[0]);
         std::string signature = helper->decodeHex(messageParts[1]);
         //TODO: check signatures etc
     }
     
-    std::cout << "\n" << sender << " -> " << receiver << ":\n" << json->toString() << std::endl << std::endl;
+    JSONHandler *json = new JSONHandler(jsonStr);
+    
+    std::cout << "\n" << sender << " -> " << receiver << ":\n" << "Type: " << (std::string) json->get("Type") << "\nComplete JSON: " << json->toString() << std::endl << std::endl;
 }
 
 int main(int argc, char **argv) {

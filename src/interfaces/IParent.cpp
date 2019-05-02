@@ -64,9 +64,10 @@ class IParent {
         while (true) {
             oWebsiteConnection->waitForReceivedData();
             incoming = oWebsiteConnection->getData();
-            std::cout << "Received from OWebsite: " << incoming << std::endl;
 
             std::vector<std::string> messages = helper->splitString(incoming, '.');
+            
+            std::cout << "Received from OWebsite: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
 
             if (messages.size() != 2)
                 continue;

@@ -1,5 +1,6 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
+#include "./JSONhandler.cpp"
 #include <stdlib.h>
 #include <string>
 #include <time.h>
@@ -8,12 +9,15 @@
 class Parent {
  private:
     Connection *websiteConnection;
-    std::string consent;
+    JSONHandler *consentJSON;
     Poco::Thread readerThread;
     std::string receivedData;
     bool automatic;
+    
     void createConsent() {
-        consent = "consent";
+        consentJSON = new JSONHandler();
+        consentJSON->put("Type", "CONSENT");
+        consentJSON->put("Value", "");
     }
 
     void readIncomingData() {
@@ -21,8 +25,14 @@ class Parent {
         while (true) {
             websiteConnection->waitForReceivedData();
             receivedData = websiteConnection->getData();
-            std::cout << "Received from Website: " << receivedData << std::endl;
+            JSONHandler *policyJSON = new JSONHandler(receivedData);
+            std::cout << "\nReceived a piece of data from Website: " << std::endl;
+            printAsTerm(policyJSON);
         }
+    }
+    
+    void printAsTerm(JSONHandler *json) {
+        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
     }
 
  public:
@@ -52,8 +62,9 @@ class Parent {
                 getchar();
             }
             
-            std::cout << "Sending to Website: " << consent << std::endl;
-            websiteConnection->sendData(consent);
+            std::cout << "Sending a piece of data to Website: " << std::endl;
+            printAsTerm(consentJSON);
+            websiteConnection->sendData(consentJSON->toString());
         }
     }
 };
