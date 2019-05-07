@@ -53,7 +53,7 @@ private:
         else { // Attempt to connect
             address = Poco::Net::SocketAddress(ip, port);
             bool success = false;
-            while (!success) {
+            do {
                 try {
                     streamSocket = Poco::Net::StreamSocket(address);
                     success = true;
@@ -61,7 +61,7 @@ private:
                 catch (Poco::Net::NetException e) {
                     sleep(1); // Sleep for a second, then try again
                 }
-            }
+            } while (!success);
         }
         
         socketStream = new Poco::Net::SocketStream(streamSocket);
