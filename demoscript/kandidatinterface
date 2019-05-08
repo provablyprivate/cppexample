@@ -1,0 +1,6 @@
+#!/bin/bash
+xterm -e sshpass -p 'website' ssh website@192.168.4.2 ./runinterfaces &
+sleep 2 
+xterm -e sshpass -p 'router' ssh router@192.168.4.1 ./runinterfaces &
+xterm -e sshpass -p 'child' ssh child@192.168.4.4 ./runinterfaces &
+xterm -e sshpass -p 'parent' ssh parent@192.168.4.3 ./runinterfaces &

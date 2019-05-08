@@ -1,0 +1,5 @@
+#!/bin/bash
+xterm -e sshpass -p 'website' ssh website@192.168.4.2 ./runmain &
+sleep 2 
+xterm -e sshpass -p 'child' ssh child@192.168.4.4 ./runmain &
+xterm -e sshpass -p 'parent' ssh parent@192.168.4.3 ./runmain &
