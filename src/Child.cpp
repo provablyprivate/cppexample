@@ -20,9 +20,6 @@ class Child {
         pdataJSON->put("Value", "This is some private data");
     }
     
-    void printAsTerm(JSONHandler *json) {
-        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
-    }
 
  public:
     Child(std::string websiteIP, int websitePort, bool autoSend) {
@@ -49,7 +46,7 @@ class Child {
             }
             
             std::cout << "Sending a piece of data to Website:" << std::endl;
-            printAsTerm(pdataJSON);
+            pdataJSON->printAsTerm();
             websiteConnection->sendData(pdataJSON->toString());
         }
 

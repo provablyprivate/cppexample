@@ -26,6 +26,7 @@ class JSONHandler {
     string toString();
     string toHex();
     Object::Ptr getObject();
+    void printAsTerm();
 };
 
 #endif  // SRC_JSONHANDLER_H_

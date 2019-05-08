@@ -29,7 +29,7 @@ void verify(std::string sender, std::string receiver, std::string message) {
     
     JSONHandler *json = new JSONHandler(jsonStr);
     
-    std::cout << "\n" << sender << " -> " << receiver << ":\n" << "Type: " << (std::string) json->get("Type") << "\nComplete JSON: " << json->toString() << std::endl << std::endl;
+    std::cout << "\n" << sender << " -> " << receiver << ":\n" << "Type: " << (json->get("Type")).toString() << "\nComplete JSON: " << json->toString() << std::endl << std::endl;
 }
 
 int main(int argc, char **argv) {

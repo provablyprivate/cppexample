@@ -25,9 +25,6 @@ class Website {
         policyJSON->put("Value", "This is some policy bla bla");
     }
     
-    void printAsTerm(JSONHandler *json) {
-        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
-    }
 
     void readIncomingChildData() {
         childConnection->waitForEstablishment();
@@ -36,7 +33,7 @@ class Website {
             receivedChildData = childConnection->getData();
             JSONHandler *pdataJSON = new JSONHandler(receivedChildData);
             std::cout << "\nReceived a piece of data from Child: " << std::endl;
-            printAsTerm(pdataJSON);
+            pdataJSON->printAsTerm();
         }
     }
 
@@ -47,7 +44,7 @@ class Website {
             receivedParentData = parentConnection->getData();
             JSONHandler *consentJSON = new JSONHandler(receivedParentData);
             std::cout << "\nReceived a piece of data from Parent:" << std::endl;
-            printAsTerm(consentJSON);
+            consentJSON->printAsTerm();
         }
     }
 
@@ -85,7 +82,7 @@ class Website {
             }
             
             std::cout << "Sending a piece of data to Parent: " << std::endl;
-            printAsTerm(policyJSON);
+            policyJSON->printAsTerm();
             parentConnection->sendData(policyJSON->toString());
         }
         

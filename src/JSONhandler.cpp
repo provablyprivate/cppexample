@@ -92,3 +92,7 @@ string JSONHandler::toHex() {
 
     return encoded.str();
 }
+
+void JSONHandler::printAsTerm() {
+    std::cout << " Type: " << (object->get("Type")).toString() << "\n Value: " << (object->get("Value")).toString() << std::endl;
+}

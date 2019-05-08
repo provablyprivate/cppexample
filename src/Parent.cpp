@@ -27,13 +27,10 @@ class Parent {
             receivedData = websiteConnection->getData();
             JSONHandler *policyJSON = new JSONHandler(receivedData);
             std::cout << "\nReceived a piece of data from Website: " << std::endl;
-            printAsTerm(policyJSON);
+            policyJSON->printAsTerm();
         }
     }
     
-    void printAsTerm(JSONHandler *json) {
-        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
-    }
 
  public:
     Parent(std::string websiteIP, int websitePort, bool autoSend) {
@@ -63,7 +60,7 @@ class Parent {
             }
             
             std::cout << "Sending a piece of data to Website: " << std::endl;
-            printAsTerm(consentJSON);
+            consentJSON->printAsTerm();
             websiteConnection->sendData(consentJSON->toString());
         }
     }
