@@ -25,15 +25,15 @@ class RWebsite {
          */
         std::string incoming;
         while (true) {
-            //TODO Should we really send consent to website???
             iWebsiteConnection->waitForReceivedData();
             incoming = iWebsiteConnection->getData();
-            std::cout << "Received from iWebsite: " << incoming << std::endl;
             std::vector<std::string> messages = helper->splitString(incoming, '.');
-
-            if (messages.size() > 1) {
+            
+            std::cout << "Received from iWebsite: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
+            if (messages.size() == 3) {
                 //From OParent
-                oWebsiteConnection->sendData(incoming);
+                oWebsiteConnection->sendData(messages[0] + "." + messages[1]);
+                websiteParentConnection->sendData(helper->decodeHex(messages[2]));
 
             } else if (messages.size() > 0) {
                 //From OChild

@@ -24,8 +24,9 @@ class RParent {
         while (true) {
             iParentConnection->waitForReceivedData();
             incoming = iParentConnection->getData();
-            std::cout << "Received from IParent: " << incoming << std::endl;
             std::vector<std::string> messages = helper->splitString(incoming, '.');
+
+            std::cout << "Received from IParent: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
 
             std::string toOParent = messages[0] + '.' + messages[1];
             std::string toParent = helper->decodeHex(messages[2]);

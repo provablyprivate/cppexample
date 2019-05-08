@@ -53,7 +53,7 @@ Crypt::Crypt(string public_key) {
  * \return string encrypted
  */
 string Crypt::encrypt(string input) {
-    return cipher->encryptString(input, Cipher::ENC_BASE64);
+    return cipher->encryptString(input, Cipher::ENC_BASE64_NO_LF);
 }
 
 /*! \brief Decrypts a string
@@ -63,7 +63,7 @@ string Crypt::encrypt(string input) {
  * \return string decrypted
  */
 string Crypt::decrypt(string input) {
-    return cipher->decryptString(input, Cipher::ENC_BASE64);;
+    return cipher->decryptString(input, Cipher::ENC_BASE64_NO_LF);;
 }
 
 /*! \brief Sign the JSON object and returns the signature

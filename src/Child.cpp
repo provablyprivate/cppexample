@@ -1,5 +1,6 @@
 #include "./interfaces/Constants.h"
 #include "./Connection.h"
+#include "./JSONhandler.cpp"
 #include <stdlib.h>
 #include <string>
 #include <time.h>
@@ -8,13 +9,19 @@
 class Child {
  private:
     Connection *websiteConnection;
-
-    std::string privateData;
+    
+    JSONHandler *pdataJSON;
 
     bool automatic;
 
     void createPrivateData() {
-        privateData = "some private data";
+        pdataJSON = new JSONHandler();
+        pdataJSON->put("Type", "PDATA");
+        pdataJSON->put("Value", "This is some private data");
+    }
+    
+    void printAsTerm(JSONHandler *json) {
+        std::cout << " Type: " << (std::string) json->get("Type") << "\n Value: " << (std::string) json->get("Value") << std::endl;
     }
 
  public:
@@ -41,8 +48,9 @@ class Child {
                 getchar();
             }
             
-            std::cout << "Sending to Website: " << privateData << std::endl;
-            websiteConnection->sendData(privateData);
+            std::cout << "Sending a piece of data to Website:" << std::endl;
+            printAsTerm(pdataJSON);
+            websiteConnection->sendData(pdataJSON->toString());
         }
 
     }

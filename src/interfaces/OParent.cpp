@@ -26,7 +26,7 @@ class OParent {
                 std::string JSONHex = parentJSON->toHex();
                 std::string signatureHex = privateParentCrypt->sign(parentJSON->getObject());
                 std::string message = JSONHex + "." + signatureHex;
-                std::cout << "Sending to iWebsite: " << message << std::endl;
+                std::cout << "Sending to iWebsite: " << helper->decodeHex(message) << std::endl;
                 iWebsiteConnection->sendData(message);
                 helper->clear();
             } else {
@@ -50,8 +50,9 @@ class OParent {
         while (true) {
             rParentConnection->waitForReceivedData();
             incoming = rParentConnection->getData();
-            std::cout << "Received from RParent: " << incoming << std::endl;
             std::vector<std::string> messages = helper->splitString(incoming, '.');
+            
+            std::cout << "Received from RParent: " << std::endl; for (int i = 0; i < messages.size(); i++) { std::cout << helper->decodeHex(messages[i]) << std::endl; }
 
             if (messages.size() > 1) {
                 JSONHandler * previousJSON = new JSONHandler(helper->decodeHex(messages[0]));
@@ -67,7 +68,8 @@ class OParent {
 
             } else if (messages.size() > 0) {
                 std::string consent = messages[0];
-                std::string encryptedData = privateParentCrypt->encrypt(consent);
+                std::string encryptedData = publicWebsiteCrypt->encrypt(consent);
+
 
                 parentJSON->put("Value", encryptedData);
                 helper->set(0,true);
@@ -85,7 +87,7 @@ class OParent {
         publicChildCrypt   = new Crypt("./src/rsa-keys/child.pub");
         publicWebsiteCrypt = new Crypt("./src/rsa-keys/website.pub");
         parentJSON         = new JSONHandler();
-        parentJSON->put("Type", "Consent");  // This might not follow type system!!!!
+        parentJSON->put("Type", "CwebsiteCONSENT");  // This might not follow type system!!!!
     }
 
     void run() {

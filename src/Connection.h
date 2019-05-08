@@ -1,7 +1,9 @@
+#include <unistd.h>
 #include "Poco/Net/StreamSocket.h"
 #include "Poco/Net/SocketStream.h"
 #include "Poco/Net/SocketAddress.h"
 #include "Poco/Net/ServerSocket.h"
+#include "Poco/Net/NetException.h"
 #include "Poco/Thread.h"
 #include "Poco/Runnable.h"
 #include "Poco/RunnableAdapter.h"
@@ -42,15 +44,26 @@ private:
 
     // Sets up the connection to the other host
     void setUp() {
+        
         if (server) { // Wait for connection
             listener = Poco::Net::ServerSocket(port, 64);
             streamSocket = listener.acceptConnection();
         }
+        
         else { // Attempt to connect
             address = Poco::Net::SocketAddress(ip, port);
-            streamSocket = Poco::Net::StreamSocket(address);
+            bool success = false;
+            do {
+                try {
+                    streamSocket = Poco::Net::StreamSocket(address);
+                    success = true;
+                }
+                catch (Poco::Net::NetException e) {
+                    sleep(1); // Sleep for a second, then try again
+                }
+            } while (!success);
         }
-
+        
         socketStream = new Poco::Net::SocketStream(streamSocket);
     }
 
@@ -73,6 +86,7 @@ private:
         }
         connectionClosed.set();
     }
+    
 
 public:
     // Tears down the connection
