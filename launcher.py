@@ -54,19 +54,31 @@ def run():
     #makeTerm(node=net.getNodeByName("website"), title="Website", cmd="./bin/Website {} {} {}".format(websitePortForParent, websitePortForChild, str(autoSend)))
     
     if extendedArchitecture: # Run all interface applications
-        makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./bin/IWebsite")
-        makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./bin/OWebsite")
-        #sleep(1)
-        makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./bin/RWebsite {} {}".format(websitePortForParent, websitePortForChild))
+        net.getNodeByName("website").cmd("./bin/IWebsite &")
+        net.getNodeByName("website").cmd("./bin/OWebsite &")
+        net.getNodeByName("website").cmd("./bin/RWebsite {} {} &".format(websitePortForParent, websitePortForChild))
         
-        makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./bin/OChild {}".format(websiteIP))
-        #sleep(1)
-        makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./bin/RChild {}".format(websitePortForChild))
+        net.getNodeByName("child").cmd("./bin/OChild {} &".format(websiteIP))
+        net.getNodeByName("child").cmd("./bin/RChild {} &".format(websitePortForChild))
         
-        makeTerm(node=net.getNodeByName("parent"), title="IParent", cmd="./bin/IParent {}".format(websiteIP))
-        makeTerm(node=net.getNodeByName("parent"), title="OParent", cmd="./bin/OParent {}".format(websiteIP))
+        net.getNodeByName("parent").cmd("./bin/IParent {} &".format(websiteIP))
+        net.getNodeByName("parent").cmd("./bin/OParent {} &".format(websiteIP))
+        net.getNodeByName("parent").cmd("./bin/RParent {} &".format(websitePortForParent))
+        
+        #makeTerm(node=net.getNodeByName("website"), title="IWebsite", cmd="./bin/IWebsite")
+
+        #makeTerm(node=net.getNodeByName("website"), title="OWebsite", cmd="./bin/OWebsite")
         #sleep(1)
-        makeTerm(node=net.getNodeByName("parent"), title="RParent", cmd="./bin/RParent {}".format(websitePortForParent))
+        #makeTerm(node=net.getNodeByName("website"), title="RWebsite", cmd="./bin/RWebsite {} {}".format(websitePortForParent, websitePortForChild))
+        
+        #makeTerm(node=net.getNodeByName("child"), title="OChild", cmd="./bin/OChild {}".format(websiteIP))
+        #sleep(1)
+        #makeTerm(node=net.getNodeByName("child"), title="RChild", cmd="./bin/RChild {}".format(websitePortForChild))
+        
+        #makeTerm(node=net.getNodeByName("parent"), title="IParent", cmd="./bin/IParent {}".format(websiteIP))
+        #makeTerm(node=net.getNodeByName("parent"), title="OParent", cmd="./bin/OParent {}".format(websiteIP))
+        #sleep(1)
+        #makeTerm(node=net.getNodeByName("parent"), title="RParent", cmd="./bin/RParent {}".format(websitePortForParent))
 
     # Run Website, Parent, Child, and Third Party
     #sleep(1)
